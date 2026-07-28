@@ -1,0 +1,33 @@
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Node / Next.js - for later
+node_modules/
+.next/
+dist/
+build/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Vector databases / generated AI data
+AI/vector_store/
+AI/chroma_db/
+AI/faiss_index/
+
+# Uploads
+uploads/
