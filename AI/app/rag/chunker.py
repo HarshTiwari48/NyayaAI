@@ -1,6 +1,8 @@
 from langchain_core.documents import Document
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
+
+
 def chunk_sections(
         sections: list[Document],
         chunk_size: int = 1200,
