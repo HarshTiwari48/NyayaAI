@@ -22,4 +22,5 @@ class AgentState(TypedDict):
 
     # Verification
     verified: bool
+    verification_feedback: str
     retry_count: int

@@ -4,7 +4,8 @@ from langchain_core.documents import Document
 
 
 SECTION_PATTERN = re.compile(
-    r"(?m)^(?P<section>\d{1,3})\.\s*(?=\(?\d*\)?\s*[A-Z])"
+    r"(?m)^(?P<section>\d{1,3})\.\s*"
+    r"(?=(?:\(\d+\)\s*)?(?:\([a-z]\)\s*)?[A-Z])"
 )
 
 

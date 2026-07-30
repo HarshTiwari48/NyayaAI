@@ -26,8 +26,8 @@ Do not provide legal conclusions.
 """,
         ),
         (
-            "human",
-            """
+    "human",
+    """
 Case summary:
 {case_summary}
 
@@ -36,6 +36,18 @@ Facts:
 
 Potential legal issues:
 {legal_issues}
+
+Previous verification feedback:
+{verification_feedback}
+
+Research attempt:
+{retry_count}
+
+Create a research plan based on the case.
+
+If this is a retry, use the verification feedback to identify what evidence
+was missing or insufficient and create improved research queries.
+Do not simply repeat the previous research queries.
 """,
         ),
     ]
@@ -52,6 +64,8 @@ def create_planner_node(llm: BaseChatModel):
                 "case_summary": state["case_summary"],
                 "facts": state["facts"],
                 "legal_issues": state["legal_issues"],
+                "verification_feedback": state["verification_feedback"],
+                "retry_count": state["retry_count"],
             }
         )
 

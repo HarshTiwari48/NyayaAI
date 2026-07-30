@@ -44,6 +44,7 @@ def main() -> None:
             "answer": "",
             "verified": False,
             "retry_count": 0,
+            "verification_feedback": "",
         }
     )
 
@@ -74,6 +75,11 @@ def main() -> None:
             f"Section {document.metadata['section']} "
             f"| Chunk {document.metadata['chunk_index']}"
         )
+
+    print("\nVERIFICATION")
+    print("Verified:", result["verified"])
+    print("Feedback:", result["verification_feedback"])
+    print("Retries:", result["retry_count"])
     print("\nANSWER")
     print(result["answer"])
 
