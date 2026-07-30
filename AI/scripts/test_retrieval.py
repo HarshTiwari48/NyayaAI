@@ -16,26 +16,34 @@ def main() -> None:
         persist_directory=VECTOR_STORE_PATH,
     )
 
-    query = "What is the punishment for cheating?"
+    TEST_QUERIES = [
+    "What is the punishment for cheating?",
+    "When can a person get bail in a non-bailable offence?",
+    "Are electronic or digital records admissible as evidence?",
+]
 
-    results = vector_store.similarity_search_with_score(
-        query=query,
-        k=5,
-    )
 
-    print(f"\nQuery: {query}\n")
+    for query in TEST_QUERIES:
+        print(f"\n{'=' * 70}")
+        print(f"QUERY: {query}")
+        print("=" * 70)
 
-    for index, (document, score) in enumerate(results, start=1):
-        print(
-            f"{index}. "
-            f"{document.metadata['act_code']} "
-            f"Section {document.metadata['section']} "
-            f"| Chunk {document.metadata['chunk_index']} "
-            f"| Score: {score:.4f}"
+        results = vector_store.similarity_search_with_score(
+            query,
+            k=5,
         )
 
-        print(document.page_content[:250])
-        print("-" * 60)
+        for i, (document, score) in enumerate(results, start=1):
+            print(
+                f"{i}. "
+                f"{document.metadata['act_code']} "
+                f"Section {document.metadata['section']} "
+                f"| Chunk {document.metadata['chunk_index']} "
+                f"| Score: {score:.4f}"
+            )
+
+            print(document.page_content[:250])
+            print("-" * 60)
 
 
 if __name__ == "__main__":
