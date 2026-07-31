@@ -1,21 +1,29 @@
-from app.services.judgement_service import search_judgments
+from app.services.judgement_service import (
+    retrieve_judgment_evidence,
+)
 
 
 def main() -> None:
-    result = search_judgments(
-        "online fraud cheating"
-    )
+    query = "online fraud cheating"
 
-    print("Total results:", result.get("found"))
+    evidence = retrieve_judgment_evidence(query)
 
-    docs = result.get("docs", [])
+    print(f"\nRetrieved passages: {len(evidence)}")
 
-    for doc in docs[:5]:
+    for i, document in enumerate(evidence, start=1):
         print(
-            doc.get("title"),
-            "| ID:",
-            doc.get("tid"),
+            f"\n{i}. {document.metadata['case_name']}"
         )
+
+        print(
+            "Score:",
+            round(
+                document.metadata["similarity_score"],
+                4,
+            ),
+        )
+
+        print(document.page_content[:400])
 
 
 if __name__ == "__main__":

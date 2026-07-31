@@ -10,7 +10,7 @@ def create_statute_research_node(vector_store: Chroma):
         evidence = []
         seen = set()
 
-        for query in state["research_queries"]:
+        for query in state["statute_queries"]:
             documents = retrieve_documents(
                 vector_store=vector_store,
                 query=query,

@@ -4,10 +4,17 @@ from pydantic import BaseModel, Field
 ResearchSource = Literal["statutes", "judgments", "user_documents"]
 
 class ResearchPlan(BaseModel):
-    research_queries: list[str] = Field(
-        description="Focused legal research queries needed to answer the case"
+    statute_queries: list[str] = Field(
+        default_factory=list,
+        description="Queries for finding relevant provisions in Indian statutes.",
     )
 
-    research_sources: list[ResearchSource] = Field(
-        description="Sources that should be searched for evidence."
+    judgment_queries: list[str] = Field(
+        default_factory=list,
+        description="Queries for finding relevant Indian judicial precedents.",
+    )
+
+    use_user_documents: bool = Field(
+        default=False,
+        description="Whether documents uploaded by the user should be researched.",
     )

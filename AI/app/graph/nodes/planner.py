@@ -12,29 +12,34 @@ PLANNER_PROMPT = ChatPromptTemplate.from_messages(
             """
 You are the research planner for an Indian legal research system.
 
-Given an analyzed case, decide what legal research is required.
+Based on the case analysis, create focused research queries.
 
-Available research sources:
-- statutes
-- judgments
-- user_documents
+Statute queries:
+- Search for applicable statutory provisions.
+- Focus on offences, ingredients, punishment, procedure, and evidence.
+- Use legal concepts rather than unnecessary case-specific details.
 
-Create focused research queries rather than answering the case yourself.
+Judgment queries:
+- Search for Indian judicial precedents involving similar facts or legal issues.
+- Make queries concise and suitable for a case-law search engine.
+- Do not include instructions such as "search", "check", "review", or "analyze".
 
-Use only sources that are actually relevant.
-Do not provide legal conclusions.
+Set use_user_documents to true only when documents supplied by the user
+could materially help answer the question.
+
+Do not invent facts that are absent from the case.
 """,
         ),
         (
-    "human",
-    """
+            "human",
+            """
 Case summary:
 {case_summary}
 
 Facts:
 {facts}
 
-Potential legal issues:
+Legal issues:
 {legal_issues}
 
 Previous verification feedback:
@@ -42,17 +47,10 @@ Previous verification feedback:
 
 Research attempt:
 {retry_count}
-
-Create a research plan based on the case.
-
-If this is a retry, use the verification feedback to identify what evidence
-was missing or insufficient and create improved research queries.
-Do not simply repeat the previous research queries.
 """,
         ),
     ]
 )
-
 
 def create_planner_node(llm: BaseChatModel):
     structured_llm = llm.with_structured_output(ResearchPlan)
@@ -70,8 +68,9 @@ def create_planner_node(llm: BaseChatModel):
         )
 
         return {
-            "research_queries": plan.research_queries,
-            "research_sources": plan.research_sources,
+            "statute_queries": plan.statute_queries,
+            "judgment_queries": plan.judgment_queries,
+            "use_user_documents": plan.use_user_documents,
         }
 
     return planner_node

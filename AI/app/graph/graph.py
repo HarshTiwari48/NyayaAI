@@ -10,6 +10,7 @@ from app.graph.state import AgentState
 from app.graph.nodes.generator import create_generator_node
 from app.graph.nodes.verifier import create_verifier_node
 from app.graph.router import route_research, route_after_verification
+from app.graph.nodes.judgment_research import judgment_research_node
 
 
 def retry_node(state: AgentState) -> dict:
@@ -53,6 +54,11 @@ def build_graph(
         "retry",
         retry_node,
     )
+
+    builder.add_node(
+        "judgment_research",
+        judgment_research_node,
+    )
     
 
     
@@ -63,13 +69,11 @@ def build_graph(
     builder.add_conditional_edges(
         "planner",
         route_research,
-        {
-            "statute_research": "statute_research",
-            "generator": "generator",
-        },
     )
 
     builder.add_edge("statute_research", "generator")
+    builder.add_edge("judgment_research", "generator")
+
     builder.add_edge("generator", "verifier")
     builder.add_conditional_edges(
         "verifier",

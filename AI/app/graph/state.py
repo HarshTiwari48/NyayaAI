@@ -1,4 +1,7 @@
 from typing import TypedDict
+import operator
+from typing import Annotated
+
 from langchain_core.documents import Document
 
 class AgentState(TypedDict):
@@ -11,11 +14,12 @@ class AgentState(TypedDict):
     legal_issues: list[str]
 
     # Planner output
-    research_queries: list[str]
-    research_sources: list[str]
-
+    statute_queries: list[str]
+    judgment_queries: list[str]
+    use_user_documents: bool
+    
     # Research output
-    evidence: list[Document]
+    evidence: Annotated[list[Document], operator.add]
 
     # Generation
     answer: str

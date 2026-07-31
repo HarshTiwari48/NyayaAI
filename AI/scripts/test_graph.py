@@ -38,8 +38,9 @@ def main() -> None:
             "case_summary": "",
             "facts": [],
             "legal_issues": [],
-            "research_queries": [],
-            "research_sources": [],
+            "statute_queries": [],
+            "judgment_queries": [],
+            "use_user_documents": False,
             "evidence": [],
             "answer": "",
             "verified": False,
@@ -59,22 +60,34 @@ def main() -> None:
     for issue in result["legal_issues"]:
         print("-", issue)
 
-    print("\nRESEARCH QUERIES")
-    for query in result["research_queries"]:
+    print("\nSTATUTE QUERIES")
+    for query in result["statute_queries"]:
         print("-", query)
 
-    print("\nRESEARCH SOURCES")
-    for source in result["research_sources"]:
-        print("-", source)
+    print("\nJUDGMENT QUERIES")
+    for query in result["judgment_queries"]:
+        print("-", query)
+
+    print("\nUSE USER DOCUMENTS")
+    print(result["use_user_documents"])
 
     print("\nEVIDENCE")
 
     for document in result["evidence"]:
-        print(
-            f"{document.metadata['act_code']} "
-            f"Section {document.metadata['section']} "
-            f"| Chunk {document.metadata['chunk_index']}"
-        )
+        source_type = document.metadata.get("source_type")
+        if source_type == "statute":
+            print(
+                f"{document.metadata['act_code']} "
+                f"Section {document.metadata['section']} "
+                f"| Chunk {document.metadata['chunk_index']}"
+            )
+
+        elif source_type == "judgment":
+            print(
+                f"Judgment | "
+                f"{document.metadata['case_name']} "
+                f"| {document.metadata.get('date', '')}"
+            )
 
     print("\nVERIFICATION")
     print("Verified:", result["verified"])
