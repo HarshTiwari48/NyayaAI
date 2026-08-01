@@ -44,7 +44,23 @@ def create_generator_node(llm: BaseChatModel):
     chain = GENERATOR_PROMPT | llm
 
     def generator_node(state: AgentState) -> dict:
-        context = format_context(state["evidence"])
+
+        unique = {}
+
+        for document in state["evidence"]:
+            key = (
+                document.metadata.get("source_type"),
+                document.metadata.get("act_code"),
+                document.metadata.get("section"),
+                document.metadata.get("document_id"),
+                document.page_content[:100],
+            )
+
+            unique[key] = document
+
+        evidence = list(unique.values())
+
+        context = format_context(evidence)
 
         response = chain.invoke(
             {

@@ -1,12 +1,12 @@
 from app.graph.graph import build_graph
-from app.services.llm import get_llm
-
+from app.rag.groq import get_groq_model
 from pathlib import Path
 
 from app.graph.graph import build_graph
 from app.rag.embeddings import get_embedding_model
 from app.rag.vector_store import load_vector_store
 from app.services.llm import get_llm
+from app.rag.loader import load_pdf
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -21,25 +21,31 @@ def main() -> None:
             persist_directory=VECTOR_STORE_PATH,
         )
 
-    llm = get_llm()
+    llm = get_groq_model()
     graph = build_graph(
             llm=llm,
             vector_store=vector_store,
         )
+
+    test_document_path = (
+    PROJECT_ROOT / "Data" / "statutes" / "BNS.pdf"
+    )
+
+    user_documents = load_pdf(test_document_path)
     
     
 
     result = graph.invoke(
         {
             "query": (
-                "A person scammed me with a laptop, "
-                "I transferred him the money and then he disappeared. I never got the laptop"
+                "According to the document I uploaded, what does it say about cheating"
             ),
             "case_summary": "",
             "facts": [],
             "legal_issues": [],
             "statute_queries": [],
             "judgment_queries": [],
+            "user_documents": user_documents,
             "use_user_documents": False,
             "evidence": [],
             "answer": "",
@@ -87,6 +93,12 @@ def main() -> None:
                 f"Judgment | "
                 f"{document.metadata['case_name']} "
                 f"| {document.metadata.get('date', '')}"
+            )
+
+        elif source_type == "user_document":
+            print(
+                f"User Document | "
+                f"Score: {document.metadata.get('similarity_score', 0):.4f}"
             )
 
     print("\nVERIFICATION")

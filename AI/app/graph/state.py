@@ -17,7 +17,7 @@ class AgentState(TypedDict):
     statute_queries: list[str]
     judgment_queries: list[str]
     use_user_documents: bool
-    
+    user_documents: list[Document]
     # Research output
     evidence: Annotated[list[Document], operator.add]
 
