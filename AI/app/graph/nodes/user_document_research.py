@@ -5,17 +5,16 @@ from app.rag.user_document_retriever import (
 
 
 def user_document_research_node(state: AgentState) -> dict:
+
+    if not state["use_user_documents"]:
+        return {"evidence": []}
+
     documents = state["user_documents"]
 
     if not documents:
         return {"evidence": []}
 
-    queries = state["statute_queries"] + state["judgment_queries"]
-
-    # Fallback for document-focused questions where planner
-    # doesn't request statute/judgment research.
-    if not queries:
-        queries = [state["query"]]
+    queries = [state["query"]]
 
     evidence = []
     seen = set()
@@ -34,4 +33,6 @@ def user_document_research_node(state: AgentState) -> dict:
                 seen.add(key)
                 evidence.append(document)
 
-    return {"evidence": evidence}
+    return {
+        "evidence": evidence,
+    }

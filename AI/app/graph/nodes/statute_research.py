@@ -4,11 +4,15 @@ from app.graph.state import AgentState
 from app.rag.retriever import retrieve_documents
 
 
+
 def create_statute_research_node(vector_store: Chroma):
 
     def statute_research_node(state: AgentState) -> dict:
         evidence = []
         seen = set()
+
+        if not state["statute_queries"]:
+            return {"evidence": []}
 
         for query in state["statute_queries"]:
             documents = retrieve_documents(

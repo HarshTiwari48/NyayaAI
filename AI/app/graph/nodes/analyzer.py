@@ -14,17 +14,28 @@ You are the case analysis component of an Indian legal research system.
 
 Analyze the user's situation before legal research begins.
 
+If an uploaded document is provided, use it as the primary source of facts.
+
 Extract:
 1. A concise case summary.
-2. Material facts explicitly provided by the user.
-3. Potential legal issues that require research.
+2. Material facts explicitly provided.
+3. Potential legal issues requiring research.
 
 Do not invent missing facts.
 Do not provide legal advice.
 Do not decide the final answer.
 """,
         ),
-        ("human", "{query}"),
+        (
+            "human",
+            """
+User query:
+{query}
+
+Uploaded document:
+{document}
+""",
+        ),
     ]
 )
 
@@ -35,9 +46,18 @@ def create_analyzer_node(llm: BaseChatModel):
     chain = ANALYZER_PROMPT | structured_llm
 
     def analyzer_node(state: AgentState) -> dict:
+        document_text = ""
+
+        if state["user_documents"]:
+            document_text = "\n\n".join(
+                doc.page_content
+                for doc in state["user_documents"][:3]
+            )
+
         analysis = chain.invoke(
             {
                 "query": state["query"],
+                "document": document_text,
             }
         )
 

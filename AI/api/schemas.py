@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import List
 
 
 class AnalyzeRequest(BaseModel):
@@ -7,3 +8,7 @@ class AnalyzeRequest(BaseModel):
 
 class AnalyzeResponse(BaseModel):
     answer: str
+    facts: List[str]
+    legal_issues: List[str]
+    verified: bool
+

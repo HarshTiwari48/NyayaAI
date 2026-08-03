@@ -5,6 +5,8 @@ from app.services.judgement_service import retrieve_judgment_evidence
 def judgment_research_node(state: AgentState) -> dict:
     evidence = []
     seen = set()
+    if not state["judgment_queries"]:
+        return {"evidence": []}
 
     # Avoid making an API search for every planner query
     queries = state["judgment_queries"][:2]
@@ -15,6 +17,10 @@ def judgment_research_node(state: AgentState) -> dict:
             case_limit=2,
             passage_limit=3,
         )
+        if not documents:
+            return {
+                "evidence": []
+            }
 
         for document in documents:
             key = (

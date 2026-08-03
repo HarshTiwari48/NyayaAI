@@ -60,7 +60,35 @@ def create_generator_node(llm: BaseChatModel):
 
         evidence = list(unique.values())
 
+        user_docs = []
+        statutes = []
+        judgments = []
+
+        for doc in evidence:
+
+            source = doc.metadata.get("source_type")
+
+            if source == "user_document":
+                user_docs.append(doc)
+
+            elif source == "judgment":
+                judgments.append(doc)
+            else: # statute
+                statutes.append(doc)
+
+        evidence = (
+            user_docs[:3]
+            + statutes[:3]
+            + judgments[:3]
+        )
+        print("\n========== GENERATOR ==========")
+        print("User Docs:", len(user_docs))
+        print("Statutes:", len(statutes))
+        print("Judgments:", len(judgments))
+        print("===============================\n")
+
         context = format_context(evidence)
+        print(context[:2500])
 
         response = chain.invoke(
             {
@@ -69,6 +97,7 @@ def create_generator_node(llm: BaseChatModel):
                 "evidence": context,
             }
         )
+        
 
         return {
             "answer": response.content,

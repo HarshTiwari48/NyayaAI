@@ -1,17 +1,15 @@
 import os
 
 import requests
-from dotenv import load_dotenv
-
 from bs4 import BeautifulSoup
+from dotenv import load_dotenv
 from langchain_core.documents import Document
-from app.rag.judgment_retriever import retrieve_judgment_passages
 
+from app.rag.judgment_retriever import retrieve_judgment_passages
 
 load_dotenv()
 
 BASE_URL = "https://api.indiankanoon.org"
-
 
 
 def clean_judgment_html(html: str) -> str:
@@ -21,6 +19,7 @@ def clean_judgment_html(html: str) -> str:
         separator="\n",
         strip=True,
     )
+
 
 def search_judgment_documents(
     query: str,
@@ -39,6 +38,9 @@ def search_judgment_documents(
             continue
 
         judgment = get_judgment(document_id)
+
+        if not judgment:
+            continue
 
         text = clean_judgment_html(
             judgment.get("doc", "")
@@ -62,47 +64,60 @@ def search_judgment_documents(
 
     return documents
 
+
 def get_judgment(document_id: int) -> dict:
     api_key = os.getenv("INDIAN_KANOON_API_KEY")
 
     if not api_key:
         raise ValueError("INDIAN_KANOON_API_KEY is not configured.")
 
-    response = requests.post(
-        f"{BASE_URL}/doc/{document_id}/",
-        headers={
-            "Authorization": f"Token {api_key}",
-        },
-        timeout=15,
-    )
+    try:
+        response = requests.post(
+            f"{BASE_URL}/doc/{document_id}/",
+            headers={
+                "Authorization": f"Token {api_key}",
+            },
+            timeout=15,
+        )
 
-    response.raise_for_status()
+        response.raise_for_status()
+        return response.json()
 
-    return response.json()
+    except requests.RequestException as e:
+        print(f"Failed to fetch judgment {document_id}: {e}")
+        return {}
 
 
-def search_judgments(query: str, page_num: int = 0) -> dict:
+def search_judgments(
+    query: str,
+    page_num: int = 0,
+) -> dict:
+
     api_key = os.getenv("INDIAN_KANOON_API_KEY")
 
     if not api_key:
         raise ValueError("INDIAN_KANOON_API_KEY is not configured.")
 
-    response = requests.post(
-        f"{BASE_URL}/search/",
-        headers={
-            "Authorization": f"Token {api_key}",
-        },
-        data={
-            "formInput": query,
-            "pagenum": page_num,
-        },
-        timeout=15,
-    )
+    try:
+        response = requests.post(
+            f"{BASE_URL}/search/",
+            headers={
+                "Authorization": f"Token {api_key}",
+            },
+            data={
+                "formInput": query,
+                "pagenum": page_num,
+            },
+            timeout=15,
+        )
 
-    response.raise_for_status()
+        response.raise_for_status()
+        return response.json()
 
+    except requests.RequestException as e:
+        print(f"Indian Kanoon search failed: {e}")
+        return {"docs": []}
 
-    return response.json()
 
 def retrieve_judgment_evidence(
     query: str,
@@ -114,6 +129,9 @@ def retrieve_judgment_evidence(
         query=query,
         limit=case_limit,
     )
+
+    if not judgments:
+        return []
 
     return retrieve_judgment_passages(
         query=query,
