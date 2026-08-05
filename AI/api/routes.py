@@ -32,11 +32,19 @@ def health():
 )
 def analyze(
     request: AnalyzeRequest,
+    thread_id: str,
 ):
 
     state = create_initial_state(request.query)
 
-    result = graph.invoke(state)
+    result = graph.invoke(
+        state,
+        config={
+            "configurable": {
+                "thread_id": thread_id,
+            }
+        },
+        )
 
     return AnalyzeResponse(
         answer=result["answer"],
@@ -51,6 +59,7 @@ def analyze(
 )
 async def analyze_document(
     query: str,
+    thread_id: str,
     file: UploadFile = File(...),
 ):
 
@@ -71,7 +80,14 @@ async def analyze_document(
     print("STATE USER DOCS:", len(state["user_documents"]))
 
     print(state["user_documents"][0].page_content[:300])
-    result = graph.invoke(state)
+    result = graph.invoke(
+        state,
+        config={
+            "configurable": {
+                "thread_id": thread_id,
+            }
+        },
+        )
     file_path.unlink(missing_ok=True)
 
     return AnalyzeResponse(

@@ -3,36 +3,58 @@ from langchain_core.prompts import ChatPromptTemplate
 
 from app.graph.state import AgentState
 from app.services.rag_service import format_context
+from langchain_core.messages import AIMessage
 
 
 GENERATOR_PROMPT = ChatPromptTemplate.from_messages(
     [
         (
-            "system",
-            """
+    "system",
+    """
 You are NyayaAI, an Indian legal information assistant.
 
-Answer the user's question using only the supplied legal evidence.
+Answer the user's question using only the supplied evidence.
+
+Evidence priority (highest to lowest):
+1. USER DOCUMENT (uploaded by the user)
+2. Statutes (BNS, BNSS, BSA)
+3. Judgments
 
 Rules:
-- Do not invent statutes, sections, facts, or punishments.
-- Ignore evidence that is unrelated to the user's question.
+- Treat the uploaded USER DOCUMENT as the primary source of facts.
+- Never replace, modify, or contradict facts from the uploaded document using retrieved legal documents.
+- Use statutes only to explain the law that applies to the facts in the uploaded document.
+- Use judgments only to support or interpret the applicable law.
+- If the user asks to summarize, explain, or extract information from the uploaded document, focus almost entirely on the USER DOCUMENT. Mention statutes or judgments only if they directly help answer the user's question.
+- Ignore unrelated evidence.
+- Do not invent statutes, sections, punishments, or facts.
 - Cite statutory claims using the format [BNS Section 318].
-- If the evidence is insufficient, clearly say so.
-- Explain the answer in clear language.
+- If the available evidence is insufficient, clearly say so.
+- Explain everything in clear language.
 - Provide legal information, not personalized legal advice.
 """,
         ),
         (
-            "human",
-            """
+    "human",
+    """
 User question:
 {query}
 
 Case summary:
 {case_summary}
 
-Legal evidence:
+The evidence below is ordered by priority.
+
+Priority 1:
+USER DOCUMENT (facts provided by the user)
+
+Priority 2:
+Relevant Statutes
+
+Priority 3:
+Relevant Judgments
+
+Evidence:
 {evidence}
 """,
         ),
@@ -101,6 +123,7 @@ def create_generator_node(llm: BaseChatModel):
 
         return {
             "answer": response.content,
+            "messages": [AIMessage(content=response.content)],
         }
 
     return generator_node

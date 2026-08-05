@@ -12,8 +12,11 @@ from app.graph.nodes.user_document_research import (
 from app.graph.nodes.generator import create_generator_node
 from app.graph.nodes.verifier import create_verifier_node
 
-from app.graph.router import route_after_verification
+from app.graph.router import (route_after_verification,
+                              route_after_analysis,)
 from app.graph.state import AgentState
+
+from langgraph.checkpoint.base import BaseCheckpointSaver
 
 
 def retry_node(state: AgentState):
@@ -25,6 +28,7 @@ def retry_node(state: AgentState):
 def build_graph(
     llm: BaseChatModel,
     vector_store: Chroma,
+    checkpointer: BaseCheckpointSaver | None = None,
 ):
     builder = StateGraph(AgentState)
 
@@ -69,7 +73,15 @@ def build_graph(
     )
 
     builder.add_edge(START, "analyzer")
-    builder.add_edge("analyzer", "planner")
+    builder.add_conditional_edges(
+        "analyzer",
+        route_after_analysis,
+        {
+            "planner": "planner",
+            "generator": "generator",
+        },
+    )
+    
 
     # ------------------------
     # FAN OUT
@@ -128,4 +140,6 @@ def build_graph(
         "planner",
     )
 
-    return builder.compile()
+    return builder.compile(
+        checkpointer=checkpointer,
+    )

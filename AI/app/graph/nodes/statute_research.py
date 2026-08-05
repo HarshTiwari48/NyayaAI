@@ -14,11 +14,11 @@ def create_statute_research_node(vector_store: Chroma):
         if not state["statute_queries"]:
             return {"evidence": []}
 
-        for query in state["statute_queries"]:
+        for query in state["statute_queries"][:2]:
             documents = retrieve_documents(
                 vector_store=vector_store,
                 query=query,
-                k=5,
+                k=2,
             )
 
             for document in documents:

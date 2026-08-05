@@ -14,8 +14,8 @@ def judgment_research_node(state: AgentState) -> dict:
     for query in queries:
         documents = retrieve_judgment_evidence(
             query=query,
-            case_limit=2,
-            passage_limit=3,
+            case_limit=1,
+            passage_limit=2,
         )
         if not documents:
             return {

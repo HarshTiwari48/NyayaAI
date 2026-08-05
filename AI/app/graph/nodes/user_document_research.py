@@ -25,9 +25,12 @@ def user_document_research_node(state: AgentState) -> dict:
             documents=documents,
             k=3,
         )
+        print("QUERY:", query)
+        print("RESULTS:", len(results))
 
         for document in results:
             key = document.page_content
+            print(document.page_content[:150])
 
             if key not in seen:
                 seen.add(key)
