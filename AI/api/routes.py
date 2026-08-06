@@ -1,16 +1,16 @@
-from app.core.graph_service import graph
-from app.core.state_factory import create_initial_state
+from pathlib import Path
+
 from fastapi import (
     APIRouter,
     File,
     UploadFile,
 )
+
+from langchain_core.messages import HumanMessage
+
+from app.core.graph_service import graph
 from app.core.state_factory import create_initial_state
-
 from app.rag.loader import load_pdf
-
-from pathlib import Path
-
 
 from api.schemas import (
     AnalyzeRequest,
@@ -18,6 +18,7 @@ from api.schemas import (
 )
 
 router = APIRouter()
+
 
 @router.get("/health")
 def health():
@@ -34,17 +35,26 @@ def analyze(
     request: AnalyzeRequest,
     thread_id: str,
 ):
+    config = {
+        "configurable": {
+            "thread_id": thread_id,
+        }
+    }
+
+    snapshot = graph.get_state(config)
 
     state = create_initial_state(request.query)
 
+    if snapshot.values:
+        state["messages"] = (
+            snapshot.values["messages"]
+            + [HumanMessage(content=request.query)]
+        )
+
     result = graph.invoke(
         state,
-        config={
-            "configurable": {
-                "thread_id": thread_id,
-            }
-        },
-        )
+        config=config,
+    )
 
     return AnalyzeResponse(
         answer=result["answer"],
@@ -52,6 +62,7 @@ def analyze(
         legal_issues=result["legal_issues"],
         verified=result["verified"],
     )
+
 
 @router.post(
     "/analyze-with-document",
@@ -62,6 +73,21 @@ async def analyze_document(
     thread_id: str,
     file: UploadFile = File(...),
 ):
+    config = {
+        "configurable": {
+            "thread_id": thread_id,
+        }
+    }
+
+    snapshot = graph.get_state(config)
+
+    state = create_initial_state(query)
+
+    if snapshot.values:
+        state["messages"] = (
+            snapshot.values["messages"]
+            + [HumanMessage(content=query)]
+        )
 
     upload_dir = Path("uploads")
     upload_dir.mkdir(exist_ok=True)
@@ -72,22 +98,14 @@ async def analyze_document(
         f.write(await file.read())
 
     pages = load_pdf(file_path)
-    print("PAGES LOADED:", len(pages))
-
-    state = create_initial_state(query)
 
     state["user_documents"] = pages
-    print("STATE USER DOCS:", len(state["user_documents"]))
 
-    print(state["user_documents"][0].page_content[:300])
     result = graph.invoke(
         state,
-        config={
-            "configurable": {
-                "thread_id": thread_id,
-            }
-        },
-        )
+        config=config,
+    )
+
     file_path.unlink(missing_ok=True)
 
     return AnalyzeResponse(
