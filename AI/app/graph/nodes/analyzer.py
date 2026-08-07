@@ -69,7 +69,7 @@ def create_analyzer_node(llm: BaseChatModel):
         for msg in state["messages"]:
             print(type(msg).__name__, ":", msg.content[:100])
 
-        print("==============================\n")
+        
 
         document_text = ""
         conversation = []
@@ -100,7 +100,7 @@ def create_analyzer_node(llm: BaseChatModel):
             }
         )
 
-        print("Analyzer decided:", analysis.needs_legal_research)
+        
 
         return {
             "case_summary": analysis.case_summary,
