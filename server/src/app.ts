@@ -7,7 +7,10 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 
 import { env } from "./config/env";
+
+
 import authRoutes from "./routes/auth.routes";
+import chatThreadRoutes from "./routes/chatThread.routes";
 
 
 
@@ -34,6 +37,7 @@ app.use(cookieParser());
 
 console.log("🔥 MOUNTING AUTH ROUTES");
 app.use("/api/auth", authRoutes);
+app.use("/api/threads", chatThreadRoutes);
 
 
 app.get("/health", (_, res) => {
