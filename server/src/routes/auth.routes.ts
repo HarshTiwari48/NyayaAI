@@ -9,6 +9,8 @@ import {
 } from "../controllers/auth.controller";
 
 import validate from "../middlewares/validate.middleware";
+import { authRateLimiter } from "../middlewares/rateLimit.middleware";
+
 import {
   registerSchema,
   loginSchema,
@@ -29,19 +31,21 @@ router.get("/test", (_, res) => {
 
 router.post(
   "/register",
+  authRateLimiter,
   validate(registerSchema),
   register
 );
 
 router.post(
   "/login",
+  authRateLimiter,
   validate(loginSchema),
   login
 );
 
 router.get("/me", authMiddleware, me);
 
-router.post("/refresh", refresh);
+router.post("/refresh", authRateLimiter, refresh);
 
 router.post("/logout", authMiddleware, logout);
 
