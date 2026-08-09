@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import { env } from "../config/env";
+import { AuthTokenPayload } from "../types/auth";
 
 interface AccessTokenPayload {
   userId: string;
@@ -27,4 +28,13 @@ export const generateRefreshToken = (userId: string): string => {
       expiresIn: env.REFRESH_TOKEN_EXPIRY as jwt.SignOptions["expiresIn"],
     }
   );
+};
+
+export const verifyRefreshToken = (token: string): string => {
+  const decoded = jwt.verify(
+    token,
+    env.JWT_REFRESH_SECRET
+  ) as AuthTokenPayload;
+
+  return decoded.userId;
 };

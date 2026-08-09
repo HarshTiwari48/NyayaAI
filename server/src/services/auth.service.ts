@@ -4,6 +4,7 @@ import { hashPassword, comparePassword } from "../utils/password";
 import {
   generateAccessToken,
   generateRefreshToken,
+  verifyRefreshToken,
 } from "../utils/jwt";
 
 
@@ -34,6 +35,10 @@ export const registerUser = async (data: RegisterData) => {
 
   const accessToken = generateAccessToken(user._id.toString());
   const refreshToken = generateRefreshToken(user._id.toString());
+  const refreshTokenHash = await hashPassword(refreshToken);
+
+  user.refreshTokenHash = refreshTokenHash;
+  await user.save();
 
   return {
     user: {
@@ -69,6 +74,11 @@ export const loginUser = async (
   const accessToken = generateAccessToken(user._id.toString());
   const refreshToken = generateRefreshToken(user._id.toString());
 
+  const refreshTokenHash = await hashPassword(refreshToken);
+
+  user.refreshTokenHash = refreshTokenHash; 
+  await user.save();
+
   return {
     user: {
       id: user._id,
@@ -91,4 +101,54 @@ export const getCurrentUser = async (userId: string) => {
   }
 
   return user;
+};
+
+export const refreshAccessToken = async (refreshToken: string) => {
+  let userId: string;
+
+  try {
+    userId = verifyRefreshToken(refreshToken);
+  } catch {
+    throw new ApiError(401, "Invalid or expired refresh token");
+  }
+
+  const user = await User.findById(userId);
+
+  if (!user || !user.refreshTokenHash) {
+    throw new ApiError(401, "Invalid refresh token");
+  }
+
+  const isValid = await comparePassword(
+    refreshToken,
+    user.refreshTokenHash
+  );
+
+  if (!isValid) {
+    throw new ApiError(401, "Invalid refresh token");
+  }
+
+  const newAccessToken = generateAccessToken(user._id.toString());
+  const newRefreshToken = generateRefreshToken(user._id.toString());
+
+  const newRefreshTokenHash = await hashPassword(newRefreshToken);
+
+  user.refreshTokenHash = newRefreshTokenHash;
+  await user.save();
+
+  return {
+    accessToken: newAccessToken,
+    refreshToken: newRefreshToken,
+  };
+};
+
+
+export const logoutUser = async (userId: string) => {
+  const user = await User.findById(userId);
+
+  if (!user) {
+    throw new ApiError(404, "User not found");
+  }
+
+  user.refreshTokenHash = null;
+  await user.save();
 };

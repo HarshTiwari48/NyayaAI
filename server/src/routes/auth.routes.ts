@@ -3,7 +3,9 @@ import { Router } from "express";
 import {
   register,
   login,
+  refresh,
   me,
+  logout,
 } from "../controllers/auth.controller";
 
 import validate from "../middlewares/validate.middleware";
@@ -38,5 +40,9 @@ router.post(
 );
 
 router.get("/me", authMiddleware, me);
+
+router.post("/refresh", refresh);
+
+router.post("/logout", authMiddleware, logout);
 
 export default router;
