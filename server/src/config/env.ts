@@ -28,6 +28,6 @@ export const env = {
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET!,
   ACCESS_TOKEN_EXPIRY: process.env.ACCESS_TOKEN_EXPIRY!,
   REFRESH_TOKEN_EXPIRY: process.env.REFRESH_TOKEN_EXPIRY!,
-  AI_SERVICE_URL: process.env.AI_SERVICE_URL!,
+  FASTAPI_URL: process.env.AI_SERVICE_URL!,
   CLIENT_URL: process.env.CLIENT_URL!,
 } as const;

@@ -14,7 +14,7 @@ export const analyzeQuery = async (
 ): Promise<AIResponse> => {
   try {
     const response = await axios.post<AIResponse>(
-      `${env.AI_SERVICE_URL}/analyze`,
+      `${env.FASTAPI_URL}/analyze`,
       {
         query,
       },
