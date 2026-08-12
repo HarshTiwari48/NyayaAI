@@ -8,6 +8,7 @@ export const sendMessage = async (
   query: string,
   userId?: string
 ) => {
+  console.log("🔥🔥 SEND MESSAGE CALLED");
   // Logged-in user → verify thread ownership
   if (userId) {
     const thread = await ChatThread.findOne({

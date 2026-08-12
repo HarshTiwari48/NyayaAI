@@ -7,6 +7,7 @@ import ApiError from "../utils/ApiError";
 
 export const sendChatMessage = AsyncHandler(
   async (req: OptionalAuthRequest, res: Response) => {
+    console.log("🔥🔥 CHAT CONTROLLER CALLED");
     const { threadId, query } = req.body;
 
     if (!threadId || !query) {
