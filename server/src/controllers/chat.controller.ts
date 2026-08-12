@@ -3,6 +3,7 @@ import { sendMessage } from "../services/chat.service";
 import ApiResponse from "../utils/ApiResponse";
 import AsyncHandler from "../utils/AsyncHandler";
 import { OptionalAuthRequest } from "../middlewares/optionalAuth.middleware";
+import { getThreadMessages } from "../services/chatMessage.service";
 import ApiError from "../utils/ApiError";
 
 export const sendChatMessage = AsyncHandler(
@@ -27,6 +28,34 @@ export const sendChatMessage = AsyncHandler(
           200,
           result,
           "Message processed successfully"
+        )
+      );
+  }
+);
+
+export const getChatMessages = AsyncHandler(
+  async (req: OptionalAuthRequest, res: Response) => {
+    if (!req.userId) {
+      throw new ApiError(
+        401,
+        "Login required to view chat history"
+      );
+    }
+
+    const threadId = req.params.threadId as string;
+
+    const messages = await getThreadMessages(
+      threadId,
+      req.userId
+    );
+
+    res
+      .status(200)
+      .json(
+        new ApiResponse(
+          200,
+          messages,
+          "Chat messages fetched successfully"
         )
       );
   }
