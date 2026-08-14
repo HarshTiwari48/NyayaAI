@@ -36,7 +36,21 @@ export const getChatThreads = AsyncHandler(
       );
     }
 
-    const threads = await getUserThreads(req.userId);
+    const page = Math.max(
+      Number(req.query.page) || 1,
+      1
+    );
+
+    const limit = Math.min(
+      Math.max(Number(req.query.limit) || 20, 1),
+      50
+    );
+
+    const threads = await getUserThreads(
+      req.userId,
+      page,
+      limit
+    );
 
     res
       .status(200)

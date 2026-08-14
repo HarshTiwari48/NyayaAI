@@ -1,5 +1,5 @@
 import { Response } from "express";
-import { analyzeDocument } from "../services/document.service";
+import { analyzeDocument, deleteDocument, getThreadDocuments } from "../services/document.service";
 import AsyncHandler from "../utils/AsyncHandler";
 import ApiResponse from "../utils/ApiResponse";
 import ApiError from "../utils/ApiError";
@@ -32,6 +32,58 @@ export const analyzeDocumentController = AsyncHandler(
         200,
         result,
         "Document analyzed successfully"
+      )
+    );
+  }
+);
+
+export const getThreadDocumentsController = AsyncHandler(
+  async (req: OptionalAuthRequest, res: Response) => {
+    if (!req.userId) {
+      throw new ApiError(
+        401,
+        "Login required to view documents"
+      );
+    }
+
+    const threadId = req.params.threadId as string;
+
+    const documents = await getThreadDocuments(
+      req.userId,
+      threadId
+    );
+
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        documents,
+        "Documents fetched successfully"
+      )
+    );
+  }
+);
+
+export const deleteDocumentController = AsyncHandler(
+  async (req: OptionalAuthRequest, res: Response) => {
+    if (!req.userId) {
+      throw new ApiError(
+        401,
+        "Login required to delete documents"
+      );
+    }
+
+    const documentId = req.params.documentId as string;
+
+    const document = await deleteDocument(
+      req.userId,
+      documentId
+    );
+
+    res.status(200).json(
+      new ApiResponse(
+        200,
+        document,
+        "Document deleted successfully"
       )
     );
   }

@@ -43,10 +43,17 @@ export const getChatMessages = AsyncHandler(
     }
 
     const threadId = req.params.threadId as string;
+    const page = Math.max(Number(req.query.page) || 1, 1);
+    const limit = Math.min(
+      Math.max(Number(req.query.limit) || 20, 1),
+      50
+    );
 
     const messages = await getThreadMessages(
       threadId,
-      req.userId
+      req.userId,
+      page,
+      limit
     );
 
     res

@@ -106,3 +106,45 @@ export const analyzeDocument = async (
     }
   }
 };
+
+export const getThreadDocuments = async (
+  userId: string,
+  threadId: string
+) => {
+  const thread = await ChatThread.findOne({
+    threadId,
+    userId,
+  });
+
+  if (!thread) {
+    throw new ApiError(404, "Chat thread not found");
+  }
+
+  return DocumentModel.find({
+    userId,
+    threadId,
+  }).sort({
+    createdAt: -1,
+  });
+};
+
+
+export const deleteDocument = async (
+  userId: string,
+  documentId: string
+) => {
+  const document = await DocumentModel.findOne({
+    _id: documentId,
+    userId,
+  });
+
+  if (!document) {
+    throw new ApiError(404, "Document not found");
+  }
+
+  await DocumentModel.deleteOne({
+    _id: documentId,
+  });
+
+  return document;
+};

@@ -30,10 +30,31 @@ export const createThread = async (
   };
 };
 
-export const getUserThreads = async (userId: string) => {
-  return ChatThread.find({ userId }).sort({
-    updatedAt: -1,
-  });
+export const getUserThreads = async (
+  userId: string,
+  page: number = 1,
+  limit: number = 20
+) => {
+  const skip = (page - 1) * limit;
+
+  const [threads, total] = await Promise.all([
+    ChatThread.find({ userId })
+      .sort({ updatedAt: -1 })
+      .skip(skip)
+      .limit(limit),
+
+    ChatThread.countDocuments({ userId }),
+  ]);
+
+  return {
+    threads,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+  };
 };
 
 export const getThreadById = async (
