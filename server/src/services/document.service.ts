@@ -1,13 +1,13 @@
 import fs from "fs";
-import path from "path";
 import FormData from "form-data";
 import axios from "axios";
 
 import DocumentModel from "../models/document.model";
 import ChatThread from "../models/chatThread.model";
+import ChatMessage from "../models/chatMessage.model";
+
 import ApiError from "../utils/ApiError";
 import { env } from "../config/env";
-import multer from "multer";
 
 export const analyzeDocument = async (
   userId: string | undefined,
@@ -31,6 +31,7 @@ export const analyzeDocument = async (
 
   formData.append("query", query);
   formData.append("thread_id", threadId);
+
   formData.append(
     "file",
     fs.createReadStream(file.path),
@@ -52,7 +53,8 @@ export const analyzeDocument = async (
       }
     );
 
-    // Save metadata only for logged-in users
+    // Save document and conversation history
+    // only for logged-in users
     if (userId) {
       await DocumentModel.create({
         userId,
@@ -60,12 +62,37 @@ export const analyzeDocument = async (
         fileName: file.originalname,
         fileType: file.mimetype,
       });
+
+      await ChatMessage.create({
+        threadId,
+        role: "user",
+        content: query,
+      });
+
+      await ChatMessage.create({
+        threadId,
+        role: "assistant",
+        content: response.data.answer,
+      });
+
+      await ChatThread.findOneAndUpdate(
+        {
+          threadId,
+          userId,
+        },
+        {
+          lastMessage: response.data.answer,
+        }
+      );
     }
 
     return response.data;
   } catch (error) {
     if (axios.isAxiosError(error)) {
-      console.error("FastAPI document error:", error.response?.data);
+      console.error(
+        "FastAPI document error:",
+        error.response?.data
+      );
     }
 
     throw new ApiError(

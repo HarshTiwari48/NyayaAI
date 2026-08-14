@@ -3,6 +3,7 @@ from pathlib import Path
 from fastapi import (
     APIRouter,
     File,
+    Form,
     UploadFile,
 )
 
@@ -69,8 +70,8 @@ def analyze(
     response_model=AnalyzeResponse,
 )
 async def analyze_document(
-    query: str,
-    thread_id: str,
+    query: str = Form(...),
+    thread_id: str = Form(...),
     file: UploadFile = File(...),
 ):
     config = {

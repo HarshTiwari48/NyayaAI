@@ -12,6 +12,7 @@ import { env } from "./config/env";
 import authRoutes from "./routes/auth.routes";
 import chatThreadRoutes from "./routes/chatThread.routes";
 import chatRoutes from "./routes/chat.routes";
+import documentRoutes from "./routes/document.routes";
 
 
 
@@ -40,6 +41,7 @@ console.log("🔥 MOUNTING AUTH ROUTES");
 app.use("/api/auth", authRoutes);
 app.use("/api/threads", chatThreadRoutes);
 app.use("/api/chat", chatRoutes);
+app.use("/api/documents", documentRoutes);
 
 
 app.get("/health", (_, res) => {
