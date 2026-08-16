@@ -1,17 +1,44 @@
 "use client";
 
+import { Scale } from "lucide-react";
+
 import ChatInput from "@/components/chat/chat-input";
+import { Button } from "@/components/ui/button";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-background">
-      <div className="mx-auto flex min-h-screen max-w-4xl flex-col items-center justify-center px-6">
+      {/* Top bar */}
+      <header className="flex h-16 items-center justify-between px-6 sm:px-8">
+        <div className="flex items-center gap-2">
+          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Scale className="size-4" />
+          </div>
+
+          <span className="text-lg font-semibold tracking-tight">
+            NyayaAI
+          </span>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button variant="ghost">
+            Log in
+          </Button>
+
+          <Button>
+            Sign up
+          </Button>
+        </div>
+      </header>
+
+      {/* Main content */}
+      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-4xl flex-col items-center justify-center px-6 pb-20">
         <div className="mb-10 text-center">
           <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
             Understand Indian Law
           </h1>
 
-          <p className="mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
             Ask questions about Indian law, understand legal situations,
             explore relevant provisions, and analyze your legal documents
             with NyayaAI.
@@ -28,7 +55,15 @@ export default function Home() {
             }}
           />
 
-          <p className="mt-3 text-center text-xs text-muted-foreground">
+          <div className="mt-4 flex justify-center gap-3 text-xs text-muted-foreground">
+            <span>Indian law</span>
+            <span>•</span>
+            <span>Case law</span>
+            <span>•</span>
+            <span>Legal documents</span>
+          </div>
+
+          <p className="mt-6 text-center text-xs text-muted-foreground">
             NyayaAI provides informational assistance and is not a substitute
             for professional legal advice.
           </p>
