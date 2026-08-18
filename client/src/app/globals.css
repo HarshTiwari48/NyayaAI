@@ -128,3 +128,13 @@
     @apply font-sans;
   }
 }
+
+body {
+  background:
+    radial-gradient(
+      circle at 50% 35%,
+      rgba(0, 0, 0, 0.035),
+      transparent 35%
+    ),
+    #fafaf9;
+}

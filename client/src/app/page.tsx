@@ -4,20 +4,37 @@ import { Scale } from "lucide-react";
 
 import ChatInput from "@/components/chat/chat-input";
 import { Button } from "@/components/ui/button";
+import {
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
 
 export default function Home() {
+  const { open } = useSidebar();
+
   return (
-    <main className="min-h-screen bg-background">
+    <main
+      className="min-h-svh flex-1 bg-cover bg-center bg-no-repeat"
+      style={{
+        backgroundImage: "url('/landing-bg.png')",
+      }}
+    >
       {/* Top bar */}
       <header className="flex h-16 items-center justify-between px-6 sm:px-8">
         <div className="flex items-center gap-2">
-          <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Scale className="size-4" />
-          </div>
+          <SidebarTrigger />
 
-          <span className="text-lg font-semibold tracking-tight">
-            NyayaAI
-          </span>
+          {!open && (
+            <>
+              <div className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+                <Scale className="size-4" />
+              </div>
+
+              <span className="text-lg font-semibold tracking-tight">
+                NyayaAI
+              </span>
+            </>
+          )}
         </div>
 
         <div className="flex items-center gap-2">
@@ -32,20 +49,20 @@ export default function Home() {
       </header>
 
       {/* Main content */}
-      <div className="mx-auto flex min-h-[calc(100vh-4rem)] max-w-4xl flex-col items-center justify-center px-6 pb-20">
-        <div className="mb-10 text-center">
-          <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-            Understand Indian Law
-          </h1>
+      <div className="flex min-h-[calc(100svh-4rem)] w-full items-center justify-center px-6 pb-20">
+        <div className="w-full max-w-4xl">
+          <div className="mb-10 text-center">
+            <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
+              Understand Indian Law
+            </h1>
 
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
-            Ask questions about Indian law, understand legal situations,
-            explore relevant provisions, and analyze your legal documents
-            with NyayaAI.
-          </p>
-        </div>
+            <p className="mx-auto mt-4 max-w-2xl text-base leading-7 text-muted-foreground sm:text-lg">
+              Ask questions about Indian law, understand legal situations,
+              explore relevant provisions, and analyze your legal documents
+              with NyayaAI.
+            </p>
+          </div>
 
-        <div className="w-full max-w-3xl">
           <ChatInput
             onSend={(message) => {
               console.log("Message:", message);
