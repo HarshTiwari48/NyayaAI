@@ -14,7 +14,7 @@ def get_groq_model() -> ChatGroq:
         raise ValueError("GROQ_API_KEY is not configured.")
 
     return ChatGroq(
-        model="llama-3.3-70b-versatile",
+        model="openai/gpt-oss-120b",
         api_key=api_key,
         temperature=0,
     )

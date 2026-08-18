@@ -19,28 +19,38 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-export default function AppSidebar() {
+interface AppSidebarProps {
+  onNewChat: () => void;
+}
+
+export default function AppSidebar({
+  onNewChat,
+}: AppSidebarProps) {
   return (
-    <Sidebar variant="floating" collapsible="offcanvas">
-      {/* Logo */}
-      <SidebarHeader className="px-3 py-4">
-  <div className="flex items-center justify-between px-2">
-    <div className="flex items-center gap-2">
-      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <Scale className="size-4" />
-      </div>
+    <Sidebar
+      variant="floating"
+      collapsible="offcanvas"
+      className="z-60"
+    >
+      {/* Header */}
+      <SidebarHeader className="shrink-0 px-3 py-4">
+        <div className="flex items-center justify-between px-2">
+          <div className="flex items-center gap-2">
+            <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+              <Scale className="size-4" />
+            </div>
 
-      <span className="text-base font-semibold tracking-tight">
-        NyayaAI
-      </span>
-    </div>
+            <span className="text-base font-semibold tracking-tight">
+              NyayaAI
+            </span>
+          </div>
 
-    <SidebarTrigger />
-  </div>
-</SidebarHeader>
+          <SidebarTrigger className="size-8 shrink-0" />
+        </div>
+      </SidebarHeader>
 
-      {/* Sidebar content */}
-      <SidebarContent className="px-2">
+      {/* Content */}
+      <SidebarContent className="min-h-0 px-2">
         {/* New Chat */}
         <SidebarGroup className="py-2">
           <SidebarGroupContent>
@@ -49,6 +59,7 @@ export default function AppSidebar() {
                 <SidebarMenuButton
                   className="h-10 rounded-lg"
                   tooltip="New chat"
+                  onClick={onNewChat}
                 >
                   <MessageSquarePlus className="size-4" />
                   <span>New chat</span>
@@ -58,7 +69,7 @@ export default function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Recent chats */}
+        {/* Recent Chats */}
         <SidebarGroup className="pt-2">
           <SidebarGroupLabel className="px-2 text-xs font-medium text-muted-foreground">
             Recent
@@ -82,8 +93,8 @@ export default function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Guest footer */}
-      <SidebarFooter className="p-3">
+      {/* Guest Footer */}
+      <SidebarFooter className="shrink-0 p-3">
         <div className="rounded-xl border bg-muted/40 p-3">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">

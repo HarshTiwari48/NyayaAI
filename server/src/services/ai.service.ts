@@ -29,7 +29,7 @@ export const analyzeQuery = async (
         params: {
           thread_id: threadId,
         },
-        timeout: 120000,
+        timeout: 300000,
       }
     );
 
