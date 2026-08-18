@@ -16,23 +16,28 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 export default function AppSidebar() {
   return (
-    <Sidebar collapsible="offcanvas">
+    <Sidebar variant="floating" collapsible="offcanvas">
       {/* Logo */}
       <SidebarHeader className="px-3 py-4">
-        <div className="flex items-center gap-2 px-2">
-          <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Scale className="size-4" />
-          </div>
+  <div className="flex items-center justify-between px-2">
+    <div className="flex items-center gap-2">
+      <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+        <Scale className="size-4" />
+      </div>
 
-          <span className="text-base font-semibold tracking-tight">
-            NyayaAI
-          </span>
-        </div>
-      </SidebarHeader>
+      <span className="text-base font-semibold tracking-tight">
+        NyayaAI
+      </span>
+    </div>
+
+    <SidebarTrigger />
+  </div>
+</SidebarHeader>
 
       {/* Sidebar content */}
       <SidebarContent className="px-2">
