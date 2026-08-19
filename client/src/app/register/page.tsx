@@ -45,16 +45,21 @@ export default function RegisterPage() {
 
       router.push("/");
     } catch (error: any) {
-      console.error("Registration failed:", error);
+  console.error("Registration failed:", error);
 
-      const message =
-        error?.response?.data?.message ||
-        "Unable to create your account. Please try again.";
+  const responseData = error?.response?.data;
 
-      setError(message);
-    } finally {
-      setIsSubmitting(false);
-    }
+  console.log("Registration error:", responseData);
+
+  const validationMessage =
+    responseData?.errors?.[0]?.message ||
+    responseData?.message ||
+    "Unable to create your account. Please try again.";
+
+  setError(validationMessage);
+} finally {
+  setIsSubmitting(false);
+}
   };
 
   return (
