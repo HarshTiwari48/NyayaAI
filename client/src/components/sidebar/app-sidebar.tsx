@@ -1,3 +1,5 @@
+"use client";
+
 import {
   FileText,
   LogIn,
@@ -19,18 +21,16 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-interface AppSidebarProps {
-  onNewChat: () => void;
-}
+import { useChat } from "@/components/providers/chat-provider";
 
-export default function AppSidebar({
-  onNewChat,
-}: AppSidebarProps) {
+export default function AppSidebar() {
+  const { newChat, isLoading } = useChat();
+
   return (
     <Sidebar
       variant="floating"
       collapsible="offcanvas"
-      className="z-60"
+      className="z-[60]"
     >
       {/* Header */}
       <SidebarHeader className="shrink-0 px-3 py-4">
@@ -59,7 +59,8 @@ export default function AppSidebar({
                 <SidebarMenuButton
                   className="h-10 rounded-lg"
                   tooltip="New chat"
-                  onClick={onNewChat}
+                  onClick={newChat}
+                  disabled={isLoading}
                 >
                   <MessageSquarePlus className="size-4" />
                   <span>New chat</span>
@@ -86,7 +87,8 @@ export default function AppSidebar({
               </p>
 
               <p className="mt-1 max-w-48 text-xs leading-5 text-muted-foreground">
-                Start a conversation and your chats will appear here.
+                Start a conversation and your chats will appear
+                here.
               </p>
             </div>
           </SidebarGroupContent>
