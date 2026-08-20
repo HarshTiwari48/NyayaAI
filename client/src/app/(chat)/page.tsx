@@ -1,7 +1,8 @@
 "use client";
 
-import { Scale } from "lucide-react";
+import { Scale, LogOut, User } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import ChatInput from "@/components/chat/chat-input";
 import { Button } from "@/components/ui/button";
@@ -11,8 +12,11 @@ import {
 } from "@/components/ui/sidebar";
 
 import { useChat } from "@/components/providers/chat-provider";
+import { useAuthStore } from "@/stores/auth.store";
+import { logout } from "@/services/auth.service";
 
 export default function Home() {
+  const router = useRouter();
   const { open } = useSidebar();
 
   const {
@@ -23,13 +27,61 @@ export default function Home() {
     sendMessage,
   } = useChat();
 
+  const user = useAuthStore((state) => state.user);
+  const authLoading = useAuthStore((state) => state.isLoading);
+  const clearUser = useAuthStore((state) => state.clearUser);
+
+  /*
+   * ============================================================
+   * USER INFORMATION
+   * ============================================================
+   */
+
+  const userName =
+    typeof user?.name === "string"
+      ? user.name
+      : "User";
+
+  const userEmail =
+    typeof user?.email === "string"
+      ? user.email
+      : "";
+
+  const initials = userName
+    .split(" ")
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
+
+  /*
+   * ============================================================
+   * LOGOUT
+   * ============================================================
+   */
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      clearUser();
+      router.refresh();
+    }
+  };
+
   return (
     <main
       className={`relative h-svh min-h-0 flex-1 overflow-hidden transition-colors duration-500 ${
         hasMessages ? "bg-[#faf9f6]" : "bg-transparent"
       }`}
     >
-      {/* Landing background */}
+      {/* ========================================================
+          LANDING BACKGROUND
+      ======================================================== */}
+
       {!hasMessages && (
         <div
           className="pointer-events-none absolute inset-0 bg-cover bg-center bg-no-repeat"
@@ -39,15 +91,23 @@ export default function Home() {
         />
       )}
 
-      {/* Chat background */}
+      {/* ========================================================
+          CHAT BACKGROUND
+      ======================================================== */}
+
       {hasMessages && (
         <div className="pointer-events-none absolute inset-0 overflow-hidden">
           <div className="absolute left-1/2 top-0 h-125 w-200 -translate-x-1/2 rounded-full bg-[#e8dcc8]/20 blur-3xl" />
         </div>
       )}
 
-      {/* Fixed Header */}
+      {/* ========================================================
+          HEADER
+      ======================================================== */}
+
       <header className="absolute inset-x-0 top-0 z-50 flex h-16 shrink-0 items-center justify-between px-6 sm:px-8">
+        {/* Left side */}
+
         <div className="flex items-center gap-2">
           {!open && <SidebarTrigger />}
 
@@ -64,29 +124,104 @@ export default function Home() {
           )}
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link href="/login">
-  <Button variant="ghost">
-    Log in
-  </Button>
-</Link>
+        {/* ======================================================
+            RIGHT SIDE
+        ====================================================== */}
 
-<Link href="/register">
-  <Button>
-    Sign up
-  </Button>
-</Link>
-        </div>
+        {!authLoading && (
+          <div className="flex items-center gap-2">
+            {!user ? (
+              /*
+               * ==================================================
+               * GUEST
+               * ==================================================
+               */
+
+              <>
+                <Link href="/login">
+                  <Button variant="ghost">
+                    Log in
+                  </Button>
+                </Link>
+
+                <Link href="/register">
+                  <Button>
+                    Sign up
+                  </Button>
+                </Link>
+              </>
+            ) : (
+              /*
+               * ==================================================
+               * LOGGED IN
+               * ==================================================
+               */
+
+              <div className="flex items-center gap-2">
+                {/* User profile pill */}
+
+                <div className="hidden items-center gap-2 rounded-lg border bg-background/80 px-2.5 py-1.5 backdrop-blur-sm sm:flex">
+                  <div className="flex size-7 items-center justify-center rounded-full bg-neutral-900 text-[10px] font-medium text-white">
+                    {initials || (
+                      <User className="size-3.5" />
+                    )}
+                  </div>
+
+                  <div className="max-w-32">
+                    <p className="truncate text-sm font-medium">
+                      {userName}
+                    </p>
+
+                    {userEmail && (
+                      <p className="truncate text-[10px] text-muted-foreground">
+                        {userEmail}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Mobile avatar */}
+
+                <div className="flex size-9 items-center justify-center rounded-full bg-neutral-900 text-xs font-medium text-white sm:hidden">
+                  {initials || (
+                    <User className="size-4" />
+                  )}
+                </div>
+
+                {/* Logout */}
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="gap-2"
+                >
+                  <LogOut className="size-4" />
+
+                  <span className="hidden sm:inline">
+                    Log out
+                  </span>
+                </Button>
+              </div>
+            )}
+          </div>
+        )}
       </header>
 
+      {/* ========================================================
+          MAIN CONTENT
+      ======================================================== */}
+
       <div className="relative z-10 h-full min-h-0">
-        {/* =====================================================
+
+        {/* ======================================================
             LANDING
-        ===================================================== */}
+        ====================================================== */}
 
         {!hasMessages && (
           <div className="flex h-full items-center justify-center overflow-hidden px-6 pb-20 pt-16">
             <div className="w-full max-w-4xl">
+
               <div className="mb-10 text-center">
                 <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
                   Understand Indian Law
@@ -118,19 +253,23 @@ export default function Home() {
                 NyayaAI provides informational assistance and is
                 not a substitute for professional legal advice.
               </p>
+
             </div>
           </div>
         )}
 
-        {/* =====================================================
+        {/* ======================================================
             CHAT
-        ===================================================== */}
+        ====================================================== */}
 
         {hasMessages && (
           <div className="flex h-full min-h-0 flex-col">
+
             {/* Messages */}
+
             <div className="min-h-0 flex-1 overflow-y-auto">
               <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 pb-44 pt-24">
+
                 {messages.map((message, index) => {
                   const isUser = message.role === "user";
 
@@ -165,6 +304,7 @@ export default function Home() {
                 })}
 
                 {/* AI processing */}
+
                 {isLoading && (
                   <div className="max-w-[85%] text-[14px] text-muted-foreground">
                     <div className="mb-2 flex items-center gap-2 text-sm font-medium text-foreground">
@@ -180,18 +320,23 @@ export default function Home() {
 
                       <span className="flex gap-1">
                         <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.3s]" />
+
                         <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground [animation-delay:-0.15s]" />
+
                         <span className="size-1.5 animate-bounce rounded-full bg-muted-foreground" />
                       </span>
                     </div>
                   </div>
                 )}
+
               </div>
             </div>
 
             {/* Composer */}
+
             <div className="shrink-0 bg-linear-to-t from-[#faf9f6] via-[#faf9f6]/95 to-transparent px-6 pb-6 pt-6">
               <div className="mx-auto w-full max-w-3xl">
+
                 <ChatInput
                   onSend={sendMessage}
                   onAttachment={() => {
@@ -203,10 +348,13 @@ export default function Home() {
                   NyayaAI provides informational assistance and
                   is not a substitute for professional legal advice.
                 </p>
+
               </div>
             </div>
+
           </div>
         )}
+
       </div>
     </main>
   );

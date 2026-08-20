@@ -3,9 +3,12 @@
 import {
   FileText,
   LogIn,
+  LogOut,
   MessageSquarePlus,
   Scale,
+  User,
 } from "lucide-react";
+import Link from "next/link";
 
 import {
   Sidebar,
@@ -21,10 +24,46 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
-import { useChat } from "@/components/providers/chat-provider";
+import { useAuthStore } from "@/stores/auth.store";
+import { logout } from "@/services/auth.service";
 
-export default function AppSidebar() {
-  const { newChat, isLoading } = useChat();
+interface AppSidebarProps {
+  onNewChat: () => void;
+}
+
+export default function AppSidebar({
+  onNewChat,
+}: AppSidebarProps) {
+  const user = useAuthStore((state) => state.user);
+  const isLoading = useAuthStore((state) => state.isLoading);
+  const clearUser = useAuthStore((state) => state.clearUser);
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    } finally {
+      clearUser();
+    }
+  };
+
+  const userName =
+    typeof user?.name === "string"
+      ? user.name
+      : "User";
+
+  const userEmail =
+    typeof user?.email === "string"
+      ? user.email
+      : "";
+
+  const initials = userName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <Sidebar
@@ -32,7 +71,10 @@ export default function AppSidebar() {
       collapsible="offcanvas"
       className="z-[60]"
     >
-      {/* Header */}
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
       <SidebarHeader className="shrink-0 px-3 py-4">
         <div className="flex items-center justify-between px-2">
           <div className="flex items-center gap-2">
@@ -49,9 +91,13 @@ export default function AppSidebar() {
         </div>
       </SidebarHeader>
 
-      {/* Content */}
+      {/* =====================================================
+          CONTENT
+      ===================================================== */}
+
       <SidebarContent className="min-h-0 px-2">
         {/* New Chat */}
+
         <SidebarGroup className="py-2">
           <SidebarGroupContent>
             <SidebarMenu>
@@ -59,10 +105,10 @@ export default function AppSidebar() {
                 <SidebarMenuButton
                   className="h-10 rounded-lg"
                   tooltip="New chat"
-                  onClick={newChat}
-                  disabled={isLoading}
+                  onClick={onNewChat}
                 >
                   <MessageSquarePlus className="size-4" />
+
                   <span>New chat</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -71,6 +117,7 @@ export default function AppSidebar() {
         </SidebarGroup>
 
         {/* Recent Chats */}
+
         <SidebarGroup className="pt-2">
           <SidebarGroupLabel className="px-2 text-xs font-medium text-muted-foreground">
             Recent
@@ -87,42 +134,88 @@ export default function AppSidebar() {
               </p>
 
               <p className="mt-1 max-w-48 text-xs leading-5 text-muted-foreground">
-                Start a conversation and your chats will appear
-                here.
+                Start a conversation and your chats will appear here.
               </p>
             </div>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      {/* Guest Footer */}
+      {/* =====================================================
+          FOOTER
+      ===================================================== */}
+
       <SidebarFooter className="shrink-0 p-3">
-        <div className="rounded-xl border bg-muted/40 p-3">
-          <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
-              <LogIn className="size-4 text-muted-foreground" />
-            </div>
-
-            <div className="min-w-0">
-              <p className="text-sm font-medium">
-                You're browsing as a guest
-              </p>
-
-              <p className="mt-1 text-xs leading-5 text-muted-foreground">
-                Log in to save and access your conversations.
-              </p>
-            </div>
+        {isLoading ? (
+          <div className="rounded-xl border bg-muted/40 p-3">
+            <div className="h-10 animate-pulse rounded-lg bg-muted" />
           </div>
+        ) : user ? (
+          /* ================= LOGGED IN ================= */
 
-          <SidebarMenu className="mt-3">
-            <SidebarMenuItem>
-              <SidebarMenuButton className="h-9 rounded-lg bg-background">
-                <LogIn className="size-4" />
-                <span>Log in</span>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          </SidebarMenu>
-        </div>
+          <div className="rounded-xl border bg-muted/40 p-3">
+            <div className="flex items-center gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-xs font-medium text-white">
+                {initials || <User className="size-4" />}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium">
+                  {userName}
+                </p>
+
+                <p className="truncate text-xs text-muted-foreground">
+                  {userEmail}
+                </p>
+              </div>
+            </div>
+
+            <SidebarMenu className="mt-3">
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  className="h-9 rounded-lg bg-background"
+                  onClick={handleLogout}
+                >
+                  <LogOut className="size-4" />
+
+                  <span>Log out</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </div>
+        ) : (
+          /* ================= GUEST ================= */
+
+          <div className="rounded-xl border bg-muted/40 p-3">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-lg bg-background">
+                <LogIn className="size-4 text-muted-foreground" />
+              </div>
+
+              <div className="min-w-0">
+                <p className="text-sm font-medium">
+                  You're browsing as a guest
+                </p>
+
+                <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                  Log in to save and access your conversations.
+                </p>
+              </div>
+            </div>
+
+            <SidebarMenu className="mt-3">
+              <SidebarMenuItem>
+                <Link
+  href="/login"
+  className="flex h-9 w-full items-center gap-2 rounded-lg bg-background px-2 text-sm"
+>
+  <LogIn className="size-4" />
+  <span>Log in</span>
+</Link>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </div>
+        )}
       </SidebarFooter>
     </Sidebar>
   );

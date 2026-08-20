@@ -30,29 +30,29 @@ export default function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      const response = await login({
-        email: email.trim(),
-        password,
-      });
+  const response = await login({
+    email: email.trim(),
+    password,
+  });
 
-      /*
-       * Backend already sets the authentication cookies.
-       * We only need to update the client-side auth state.
-       */
-      setUser(response.data);
+  /*
+   * Backend sets the authentication cookies.
+   * Store only the actual user object in Zustand.
+   */
+  setUser(response.data.user);
 
-      router.push("/");
-    } catch (error: any) {
-  console.error("Registration failed:", error);
+  router.push("/");
+} catch (error: any) {
+  console.error("Login failed:", error);
 
   const responseData = error?.response?.data;
 
-  console.log("Registration error:", responseData);
+  console.log("Login error:", responseData);
 
   const validationMessage =
     responseData?.errors?.[0]?.message ||
     responseData?.message ||
-    "Unable to create your account. Please try again.";
+    "Unable to log in. Please try again.";
 
   setError(validationMessage);
 } finally {

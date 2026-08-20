@@ -41,7 +41,7 @@ export default function RegisterPage() {
        * Backend should set the authentication cookies.
        * Update the client auth state with the returned user.
        */
-      setUser(response.data);
+      setUser(response.data.user);
 
       router.push("/");
     } catch (error: any) {
