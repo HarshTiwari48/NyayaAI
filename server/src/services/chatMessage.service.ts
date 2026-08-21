@@ -13,6 +13,14 @@ export const saveMessage = async (
     content,
   });
 
+  await ChatThread.findOneAndUpdate(
+    { threadId },
+    {
+      lastMessage: content.slice(0, 500),
+      updatedAt: new Date(),
+    }
+  );
+
   return message;
 };
 

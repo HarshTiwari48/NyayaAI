@@ -3,12 +3,23 @@
 import {
   createContext,
   useContext,
+  useEffect,
   useState,
   type ReactNode,
 } from "react";
 
-import { createThread } from "@/services/chatThread.service";
-import { sendMessage as sendChatMessage } from "@/services/chat.service";
+import {
+  createThread,
+  getThreads,
+  type ChatThread,
+} from "@/services/chatThread.service";
+
+import {
+  getThreadMessages,
+  sendMessage as sendChatMessage,
+} from "@/services/chat.service";
+
+import { useAuthStore } from "@/stores/auth.store";
 
 export type Message = {
   role: "user" | "assistant";
@@ -18,11 +29,19 @@ export type Message = {
 type ChatContextType = {
   messages: Message[];
   threadId: string | null;
+  threads: ChatThread[];
+
   isLoading: boolean;
+  isLoadingThreads: boolean;
+  isLoadingMessages: boolean;
+
   status: string;
   hasMessages: boolean;
+
   sendMessage: (message: string) => Promise<void>;
   newChat: () => void;
+  selectThread: (threadId: string) => Promise<void>;
+  refreshThreads: () => Promise<void>;
 };
 
 const ChatContext = createContext<ChatContextType | undefined>(
@@ -34,13 +53,128 @@ export function ChatProvider({
 }: {
   children: ReactNode;
 }) {
+  const user = useAuthStore((state) => state.user);
+  const isAuthLoading = useAuthStore(
+    (state) => state.isLoading
+  );
+
   const [messages, setMessages] = useState<Message[]>([]);
-  const [threadId, setThreadId] = useState<string | null>(null);
+  const [threadId, setThreadId] = useState<string | null>(
+    null
+  );
+
+  const [threads, setThreads] = useState<ChatThread[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingThreads, setIsLoadingThreads] =
+    useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] =
+    useState(false);
+
   const [status, setStatus] = useState("");
 
   const hasMessages = messages.length > 0;
+
+  /*
+   * ============================================================
+   * LOAD USER'S THREADS
+   * ============================================================
+   */
+
+  const refreshThreads = async () => {
+    if (!user) {
+      setThreads([]);
+      return;
+    }
+
+    try {
+      setIsLoadingThreads(true);
+
+      const response = await getThreads(1, 20);
+
+      setThreads(response.threads);
+    } catch (error) {
+      console.error(
+        "Failed to load chat threads:",
+        error
+      );
+    } finally {
+      setIsLoadingThreads(false);
+    }
+  };
+
+  /*
+   * ============================================================
+   * LOAD THREADS WHEN AUTH IS READY
+   * ============================================================
+   */
+
+  useEffect(() => {
+    if (isAuthLoading) {
+      return;
+    }
+
+    if (!user) {
+      setThreads([]);
+      return;
+    }
+
+    refreshThreads();
+  }, [user, isAuthLoading]);
+
+  /*
+   * ============================================================
+   * SELECT EXISTING THREAD
+   * ============================================================
+   */
+
+  const selectThread = async (
+    selectedThreadId: string
+  ) => {
+    if (
+      isLoading ||
+      isLoadingMessages ||
+      selectedThreadId === threadId
+    ) {
+      return;
+    }
+
+    try {
+      setIsLoadingMessages(true);
+      setStatus("Loading conversation...");
+
+      const response = await getThreadMessages(
+        selectedThreadId,
+        1,
+        50
+      );
+
+      const loadedMessages: Message[] =
+        response.messages.map((message) => ({
+          role: message.role,
+          content: message.content,
+        }));
+
+      setMessages(loadedMessages);
+      setThreadId(selectedThreadId);
+      setStatus("");
+    } catch (error) {
+      console.error(
+        "Failed to load conversation:",
+        error
+      );
+
+      setStatus("");
+    } finally {
+      setIsLoadingMessages(false);
+    }
+  };
+
+  /*
+   * ============================================================
+   * SEND MESSAGE
+   * ============================================================
+   */
 
   const sendMessage = async (message: string) => {
     const userMessage = message.trim();
@@ -48,6 +182,10 @@ export function ChatProvider({
     if (!userMessage || isLoading) {
       return;
     }
+
+    /*
+     * Immediately show user's message.
+     */
 
     setMessages((current) => [
       ...current,
@@ -64,21 +202,52 @@ export function ChatProvider({
 
     try {
       /*
-       * First message of this chat:
-       * create the thread through the backend.
+       * ========================================================
+       * FIRST MESSAGE
+       * ========================================================
+       *
+       * Create the thread lazily.
        */
+
       if (!currentThreadId) {
         const thread = await createThread();
 
         currentThreadId = thread.threadId;
 
         setThreadId(currentThreadId);
+
+        /*
+         * If the user is logged in, the backend actually
+         * created a persistent thread.
+         *
+         * Add it immediately to Recent instead of making
+         * the user wait for another request.
+         */
+
+        if (user && !thread.isGuest) {
+          const newThread: ChatThread = {
+            _id: "",
+            userId: "",
+            threadId: thread.threadId,
+            title: thread.title,
+            lastMessage: "",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+
+          setThreads((current) => [
+            newThread,
+            ...current,
+          ]);
+        }
       }
 
       /*
-       * Fake processing status while the actual
-       * AI request is running.
+       * ========================================================
+       * PROCESSING STATUS
+       * ========================================================
        */
+
       let statusStep = 0;
 
       const statuses = [
@@ -88,15 +257,29 @@ export function ChatProvider({
       ];
 
       const statusTimer = window.setInterval(() => {
-        statusStep = (statusStep + 1) % statuses.length;
+        statusStep =
+          (statusStep + 1) % statuses.length;
+
         setStatus(statuses[statusStep]);
       }, 1800);
 
       try {
+        /*
+         * ======================================================
+         * SEND TO BACKEND
+         * ======================================================
+         */
+
         const response = await sendChatMessage({
           threadId: currentThreadId,
           query: userMessage,
         });
+
+        /*
+         * ======================================================
+         * ADD AI RESPONSE
+         * ======================================================
+         */
 
         setMessages((current) => [
           ...current,
@@ -105,13 +288,44 @@ export function ChatProvider({
             content: response.answer,
           },
         ]);
+
+        /*
+         * ======================================================
+         * UPDATE RECENT THREAD
+         * ======================================================
+         */
+
+        if (user) {
+          setThreads((current) =>
+            current
+              .map((thread) =>
+                thread.threadId === currentThreadId
+                  ? {
+                      ...thread,
+                      lastMessage:
+                        response.answer.slice(0, 500),
+                      updatedAt:
+                        new Date().toISOString(),
+                    }
+                  : thread
+              )
+              .sort(
+                (a, b) =>
+                  new Date(b.updatedAt).getTime() -
+                  new Date(a.updatedAt).getTime()
+              )
+          );
+        }
       } finally {
         window.clearInterval(statusTimer);
       }
 
       setStatus("");
     } catch (error) {
-      console.error("Chat request failed:", error);
+      console.error(
+        "Chat request failed:",
+        error
+      );
 
       setMessages((current) => [
         ...current,
@@ -128,13 +342,13 @@ export function ChatProvider({
     }
   };
 
+  /*
+   * ============================================================
+   * NEW CHAT
+   * ============================================================
+   */
+
   const newChat = () => {
-    /*
-     * Don't create a backend thread here.
-     *
-     * The thread is created lazily when the first
-     * message of the new conversation is sent.
-     */
     if (isLoading) {
       return;
     }
@@ -144,16 +358,30 @@ export function ChatProvider({
     setStatus("");
   };
 
+  /*
+   * ============================================================
+   * PROVIDER
+   * ============================================================
+   */
+
   return (
     <ChatContext.Provider
       value={{
         messages,
         threadId,
+        threads,
+
         isLoading,
+        isLoadingThreads,
+        isLoadingMessages,
+
         status,
         hasMessages,
+
         sendMessage,
         newChat,
+        selectThread,
+        refreshThreads,
       }}
     >
       {children}

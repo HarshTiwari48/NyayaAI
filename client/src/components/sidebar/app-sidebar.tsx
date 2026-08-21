@@ -24,19 +24,21 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 
+import { useChat } from "@/components/providers/chat-provider";
 import { useAuthStore } from "@/stores/auth.store";
 import { logout } from "@/services/auth.service";
 
-interface AppSidebarProps {
-  onNewChat: () => void;
-}
-
-export default function AppSidebar({
-  onNewChat,
-}: AppSidebarProps) {
+export default function AppSidebar() {
   const user = useAuthStore((state) => state.user);
   const isLoading = useAuthStore((state) => state.isLoading);
   const clearUser = useAuthStore((state) => state.clearUser);
+
+  const {
+    threads,
+    selectThread,
+    newChat,
+    isLoadingThreads,
+  } = useChat();
 
   const handleLogout = async () => {
     try {
@@ -105,7 +107,7 @@ export default function AppSidebar({
                 <SidebarMenuButton
                   className="h-10 rounded-lg"
                   tooltip="New chat"
-                  onClick={onNewChat}
+                  onClick={newChat}
                 >
                   <MessageSquarePlus className="size-4" />
 
@@ -124,19 +126,47 @@ export default function AppSidebar({
           </SidebarGroupLabel>
 
           <SidebarGroupContent>
-            <div className="flex min-h-48 flex-col items-center justify-center px-4 text-center">
-              <div className="mb-3 flex size-9 items-center justify-center rounded-full bg-muted">
-                <FileText className="size-4 text-muted-foreground" />
+            {isLoadingThreads ? (
+              <div className="space-y-2 px-2 py-2">
+                <div className="h-9 animate-pulse rounded-lg bg-muted" />
+                <div className="h-9 animate-pulse rounded-lg bg-muted" />
+                <div className="h-9 animate-pulse rounded-lg bg-muted" />
               </div>
+            ) : threads.length === 0 ? (
+              <div className="flex min-h-48 flex-col items-center justify-center px-4 text-center">
+                <div className="mb-3 flex size-9 items-center justify-center rounded-full bg-muted">
+                  <FileText className="size-4 text-muted-foreground" />
+                </div>
 
-              <p className="text-sm font-medium">
-                No conversations yet
-              </p>
+                <p className="text-sm font-medium">
+                  No conversations yet
+                </p>
 
-              <p className="mt-1 max-w-48 text-xs leading-5 text-muted-foreground">
-                Start a conversation and your chats will appear here.
-              </p>
-            </div>
+                <p className="mt-1 max-w-48 text-xs leading-5 text-muted-foreground">
+                  Start a conversation and your chats will appear here.
+                </p>
+              </div>
+            ) : (
+              <SidebarMenu>
+                {threads.map((thread) => (
+                  <SidebarMenuItem key={thread.threadId}>
+                    <SidebarMenuButton
+                      className="h-10 rounded-lg"
+                      tooltip={thread.title}
+                      onClick={() =>
+                        selectThread(thread.threadId)
+                      }
+                    >
+                      <MessageSquarePlus className="size-4 shrink-0" />
+
+                      <span className="truncate">
+                        {thread.title}
+                      </span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            )}
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
@@ -156,7 +186,9 @@ export default function AppSidebar({
           <div className="rounded-xl border bg-muted/40 p-3">
             <div className="flex items-center gap-3">
               <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-xs font-medium text-white">
-                {initials || <User className="size-4" />}
+                {initials || (
+                  <User className="size-4" />
+                )}
               </div>
 
               <div className="min-w-0 flex-1">
@@ -206,12 +238,13 @@ export default function AppSidebar({
             <SidebarMenu className="mt-3">
               <SidebarMenuItem>
                 <Link
-  href="/login"
-  className="flex h-9 w-full items-center gap-2 rounded-lg bg-background px-2 text-sm"
->
-  <LogIn className="size-4" />
-  <span>Log in</span>
-</Link>
+                  href="/login"
+                  className="flex h-9 w-full items-center gap-2 rounded-lg bg-background px-2 text-sm"
+                >
+                  <LogIn className="size-4" />
+
+                  <span>Log in</span>
+                </Link>
               </SidebarMenuItem>
             </SidebarMenu>
           </div>
