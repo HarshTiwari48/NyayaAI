@@ -17,9 +17,8 @@ def main() -> None:
     )
 
     TEST_QUERIES = [
-    "What is the punishment for cheating?",
-    "When can a person get bail in a non-bailable offence?",
-    "Are electronic or digital records admissible as evidence?",
+    "BNS section 325",
+    "what does Section 325 state?",
 ]
 
 
