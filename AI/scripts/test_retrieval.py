@@ -17,9 +17,15 @@ def main() -> None:
     )
 
     TEST_QUERIES = [
-    "BNS section 325",
-    "what does Section 325 state?",
-]
+    "BNS Section 325",
+    "What does BNS Section 325 state?",
+    "What is the punishment for killing a dog?",
+    "What is the punishment for killing an animal?",
+    "What is the punishment for theft?",
+    "What is the punishment for cheating?",
+    "What law deals with causing death by negligence?",
+    "What are the rules regarding electronic evidence?",
+    ]
 
 
     for query in TEST_QUERIES:

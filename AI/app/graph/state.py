@@ -6,6 +6,7 @@ from langchain_core.documents import Document
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
 
+
 class AgentState(TypedDict):
     # Input
     query: str
@@ -19,10 +20,10 @@ class AgentState(TypedDict):
 
     # Planner output
     statute_queries: list[str]
-    judgment_queries: list[str]
     use_user_documents: bool
-    user_documents: list[Document]
+
     # Research output
+    user_documents: list[Document]
     evidence: Annotated[list[Document], operator.add]
 
     # Generation
@@ -31,4 +32,3 @@ class AgentState(TypedDict):
     # Verification
     verified: bool
     verification_feedback: str
-    retry_count: int

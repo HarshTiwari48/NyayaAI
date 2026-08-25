@@ -18,20 +18,19 @@ If the current question depends on previous messages (for example "What is my na
 
 Do not say you don't know previous messages if they are present in the conversation history.
 
-Use retrieved statutes and judgments only for legal reasoning, not for remembering the conversation.
+Use retrieved legal evidence only for legal reasoning, not for remembering the conversation.
 
 Answer the user's question using only the supplied evidence.
 
 Evidence priority (highest to lowest):
 1. USER DOCUMENT (uploaded by the user)
 2. Statutes (BNS, BNSS, BSA)
-3. Judgments
+
 
 Rules:
 - Treat the uploaded USER DOCUMENT as the primary source of facts.
 - Never replace, modify, or contradict facts from the uploaded document using retrieved legal documents.
 - Use statutes only to explain the law that applies to the facts in the uploaded document.
-- Use judgments only to support or interpret the applicable law.
 - If the user asks to summarize, explain, or extract information from the uploaded document, focus almost entirely on the USER DOCUMENT. Mention statutes or judgments only if they directly help answer the user's question.
 - Ignore unrelated evidence.
 - Do not invent statutes, sections, punishments, or facts.
@@ -94,7 +93,7 @@ def create_generator_node(llm: BaseChatModel):
 
         user_docs = []
         statutes = []
-        judgments = []
+        
 
         for doc in evidence:
 
@@ -103,15 +102,13 @@ def create_generator_node(llm: BaseChatModel):
             if source == "user_document":
                 user_docs.append(doc)
 
-            elif source == "judgment":
-                judgments.append(doc)
+            
             else: # statute
                 statutes.append(doc)
 
         evidence = (
             user_docs[:3]
             + statutes[:3]
-            + judgments[:3]
         )
         
 

@@ -12,18 +12,17 @@ PLANNER_PROMPT = ChatPromptTemplate.from_messages(
             """
 You are the research planner for an Indian legal research system.
 
-Based on the case analysis, create focused research queries.
+Based on the case analysis, create focused research queries for
+relevant Indian statutory provisions.
 
 Statute queries:
 - Generate concise legal concepts.
-- Prefer Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS), and Bharatiya Sakshya Adhiniyam (BSA).
-- Avoid referring to the repealed Indian Penal Code (IPC) unless the user explicitly asks about historical law.
+- Prefer Bharatiya Nyaya Sanhita (BNS), Bharatiya Nagarik Suraksha Sanhita (BNSS),
+  and Bharatiya Sakshya Adhiniyam (BSA).
+- Avoid referring to the repealed Indian Penal Code (IPC) unless the user
+  explicitly asks about historical law.
 - Do not write "search", "check", or "review".
-
-Judgment queries:
-- Search for Indian judicial precedents involving similar facts or legal issues.
-- Make queries concise and suitable for a case-law search engine.
-- Do not include instructions such as "search", "check", "review", or "analyze".
+- Focus on the actual legal issues raised by the user.
 
 Set use_user_documents to true only when documents supplied by the user
 could materially help answer the question.
@@ -45,13 +44,11 @@ Legal issues:
 
 Previous verification feedback:
 {verification_feedback}
-
-Research attempt:
-{retry_count}
 """,
         ),
     ]
 )
+
 
 def create_planner_node(llm: BaseChatModel):
     structured_llm = llm.with_structured_output(ResearchPlan)
@@ -64,13 +61,11 @@ def create_planner_node(llm: BaseChatModel):
                 "facts": state["facts"],
                 "legal_issues": state["legal_issues"],
                 "verification_feedback": state["verification_feedback"],
-                "retry_count": state["retry_count"],
             }
         )
 
         return {
             "statute_queries": plan.statute_queries,
-            "judgment_queries": plan.judgment_queries,
             "use_user_documents": plan.use_user_documents,
         }
 
