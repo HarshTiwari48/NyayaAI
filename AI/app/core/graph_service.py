@@ -10,7 +10,7 @@ from app.rag.vector_store import load_vector_store
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-VECTOR_STORE_PATH = PROJECT_ROOT / "vector_store"
+VECTOR_STORE_PATH = PROJECT_ROOT / "AI" / "vector_store"
 
 CHECKPOINT_DB = PROJECT_ROOT / "checkpoints.db"
 

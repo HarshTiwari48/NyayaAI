@@ -2,6 +2,7 @@ from pathlib import Path
 
 from app.rag.embeddings import get_embedding_model
 from app.rag.vector_store import load_vector_store
+from app.rag.retriever import retrieve_documents
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -17,34 +18,33 @@ def main() -> None:
     )
 
     TEST_QUERIES = [
-    "BNS Section 325",
-    "What does BNS Section 325 state?",
-    "What is the punishment for killing a dog?",
-    "What is the punishment for killing an animal?",
-    "What is the punishment for theft?",
-    "What is the punishment for cheating?",
-    "What law deals with causing death by negligence?",
-    "What are the rules regarding electronic evidence?",
+        "BNS Section 325",
+        "What does BNS Section 325 state?",
+        "What is the punishment for killing a dog?",
+        "What is the punishment for killing an animal?",
+        "What is the punishment for theft?",
+        "What is the punishment for cheating?",
+        "What law deals with causing death by negligence?",
+        "What are the rules regarding electronic evidence?",
     ]
-
 
     for query in TEST_QUERIES:
         print(f"\n{'=' * 70}")
         print(f"QUERY: {query}")
         print("=" * 70)
 
-        results = vector_store.similarity_search_with_score(
-            query,
+        results = retrieve_documents(
+            vector_store=vector_store,
+            query=query,
             k=5,
         )
 
-        for i, (document, score) in enumerate(results, start=1):
+        for i, document in enumerate(results, start=1):
             print(
                 f"{i}. "
-                f"{document.metadata['act_code']} "
-                f"Section {document.metadata['section']} "
-                f"| Chunk {document.metadata['chunk_index']} "
-                f"| Score: {score:.4f}"
+                f"{document.metadata.get('act_code')} "
+                f"Section {document.metadata.get('section')} "
+                f"| Chunk {document.metadata.get('chunk_index')}"
             )
 
             print(document.page_content[:250])

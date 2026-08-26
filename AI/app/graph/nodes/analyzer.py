@@ -12,9 +12,12 @@ ANALYZER_PROMPT = ChatPromptTemplate.from_messages(
             """
 You are the case analysis component of an Indian legal research system.
 
-Analyze the user's situation before legal research begins.
+Analyze the user's current question before legal research begins.
 
 If an uploaded document is provided, use it as the primary source of facts.
+
+Use the recent conversation context only to understand references
+to earlier messages.
 
 Extract:
 1. A concise case summary.
@@ -35,7 +38,7 @@ False:
 - Greetings.
 - Small talk.
 - Memory questions (e.g. "What is my name?")
-- Questions about previous conversation.
+- Questions about previous conversation that do not require legal research.
 - Questions answerable purely from the conversation without researching law.
 
 Do not invent missing facts.
@@ -46,7 +49,10 @@ Do not decide the final answer.
         (
             "human",
             """
-User query:
+Recent conversation:
+{conversation}
+
+Current user query:
 {query}
 
 Uploaded document:
@@ -66,28 +72,27 @@ def create_analyzer_node(llm: BaseChatModel):
         print("\n========== ANALYZER ==========")
         print("Messages in state:", len(state["messages"]))
 
-        for msg in state["messages"]:
-            print(type(msg).__name__, ":", msg.content[:100])
+        # Only use recent messages for conversational context.
+        recent_messages = state["messages"][-6:]
 
-        
+        conversation_parts = []
 
-        document_text = ""
-        conversation = []
-        for message in state["messages"]:
+        for message in recent_messages:
             role = "User"
 
             if message.type == "ai":
                 role = "Assistant"
 
-            conversation.append(
+            conversation_parts.append(
                 f"{role}: {message.content}"
             )
 
-        conversation_text = "\n".join(conversation)
+        conversation_text = "\n".join(conversation_parts)
 
-            
+        document_text = ""
 
         if state["user_documents"]:
+            # Keep the existing behavior for now.
             document_text = "\n\n".join(
                 doc.page_content
                 for doc in state["user_documents"][:3]
@@ -95,20 +100,17 @@ def create_analyzer_node(llm: BaseChatModel):
 
         analysis = chain.invoke(
             {
-                "query": conversation_text,
+                "conversation": conversation_text,
+                "query": state["query"],
                 "document": document_text,
             }
         )
-
-        
 
         return {
             "case_summary": analysis.case_summary,
             "facts": analysis.facts,
             "legal_issues": analysis.legal_issues,
             "needs_legal_research": analysis.needs_legal_research,
-        }   
-        
-    
+        }
 
     return analyzer_node
