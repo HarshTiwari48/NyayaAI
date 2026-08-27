@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { Scale, LogOut, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -14,10 +15,14 @@ import {
 import { useChat } from "@/components/providers/chat-provider";
 import { useAuthStore } from "@/stores/auth.store";
 import { logout } from "@/services/auth.service";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function Home() {
   const router = useRouter();
   const { open } = useSidebar();
+
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const {
     messages,
@@ -26,6 +31,13 @@ export default function Home() {
     hasMessages,
     sendMessage,
   } = useChat();
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "end",
+    });
+  }, [messages, isLoading]);
 
   const user = useAuthStore((state) => state.user);
   const authLoading = useAuthStore((state) => state.isLoading);
@@ -131,12 +143,6 @@ export default function Home() {
         {!authLoading && (
           <div className="flex items-center gap-2">
             {!user ? (
-              /*
-               * ==================================================
-               * GUEST
-               * ==================================================
-               */
-
               <>
                 <Link href="/login">
                   <Button variant="ghost">
@@ -151,12 +157,6 @@ export default function Home() {
                 </Link>
               </>
             ) : (
-              /*
-               * ==================================================
-               * LOGGED IN
-               * ==================================================
-               */
-
               <div className="flex items-center gap-2">
                 {/* User profile pill */}
 
@@ -268,7 +268,7 @@ export default function Home() {
             {/* Messages */}
 
             <div className="min-h-0 flex-1 overflow-y-auto">
-              <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 pb-44 pt-24">
+              <div className="mx-auto flex w-full max-w-3xl flex-col gap-8 px-6 pb-10 pt-24">
 
                 {messages.map((message, index) => {
                   const isUser = message.role === "user";
@@ -294,8 +294,10 @@ export default function Home() {
                             <span>NyayaAI</span>
                           </div>
 
-                          <div className="whitespace-pre-wrap">
-                            {message.content}
+                          <div className="prose prose-sm max-w-none">
+                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                              {message.content}
+                            </ReactMarkdown>
                           </div>
                         </>
                       )}
@@ -329,10 +331,16 @@ export default function Home() {
                   </div>
                 )}
 
+                {/* Auto-scroll target */}
+
+                <div ref={messagesEndRef} />
+
               </div>
             </div>
 
-            {/* Composer */}
+            {/* ==================================================
+                COMPOSER
+            ================================================== */}
 
             <div className="shrink-0 bg-linear-to-t from-[#faf9f6] via-[#faf9f6]/95 to-transparent px-6 pb-6 pt-6">
               <div className="mx-auto w-full max-w-3xl">
