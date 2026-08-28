@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowUp, Paperclip } from "lucide-react";
+import { ArrowUp, Loader2, Paperclip } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,7 +26,10 @@ export default function ChatInput({
     if (!textarea) return;
 
     textarea.style.height = "auto";
-    textarea.style.height = `${Math.min(textarea.scrollHeight, 180)}px`;
+    textarea.style.height = `${Math.min(
+      textarea.scrollHeight,
+      180,
+    )}px`;
   };
 
   useEffect(() => {
@@ -45,20 +48,32 @@ export default function ChatInput({
   const handleKeyDown = (
     event: React.KeyboardEvent<HTMLTextAreaElement>,
   ) => {
-    if (event.key === "Enter" && !event.shiftKey) {
+    if (
+      event.key === "Enter" &&
+      !event.shiftKey &&
+      !disabled
+    ) {
       event.preventDefault();
       handleSend();
     }
   };
 
   return (
-    <div className="rounded-2xl border bg-background p-3 shadow-sm transition-shadow focus-within:shadow-md">
+    <div
+      className={`rounded-2xl border bg-background p-3 shadow-sm transition-shadow focus-within:shadow-md ${
+        disabled ? "opacity-80" : ""
+      }`}
+    >
       <Textarea
         ref={textareaRef}
         value={message}
         onChange={(event) => setMessage(event.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Ask NyayaAI anything..."
+        placeholder={
+          disabled
+            ? "NyayaAI is thinking..."
+            : "Ask NyayaAI anything..."
+        }
         disabled={disabled}
         rows={1}
         className="min-h-10 resize-none border-0 px-2 py-2 shadow-none focus-visible:ring-0"
@@ -83,7 +98,11 @@ export default function ChatInput({
           disabled={!message.trim() || disabled}
           aria-label="Send message"
         >
-          <ArrowUp className="size-4" />
+          {disabled ? (
+            <Loader2 className="size-4 animate-spin" />
+          ) : (
+            <ArrowUp className="size-4" />
+          )}
         </Button>
       </div>
     </div>

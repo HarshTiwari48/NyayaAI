@@ -86,7 +86,7 @@ export default function Home() {
 
   return (
     <main
-      className={`relative h-svh min-h-0 flex-1 overflow-hidden transition-colors duration-500 ${
+        className={`relative flex h-full min-h-0 flex-1 overflow-hidden transition-colors duration-500 ${
         hasMessages ? "bg-[#faf9f6]" : "bg-transparent"
       }`}
     >
@@ -212,7 +212,7 @@ export default function Home() {
           MAIN CONTENT
       ======================================================== */}
 
-      <div className="relative z-10 h-full min-h-0">
+      <div className="relative z-10 flex h-full min-h-0 flex-1 flex-col">
 
         {/* ======================================================
             LANDING
@@ -239,6 +239,7 @@ export default function Home() {
                 onAttachment={() => {
                   console.log("Attachment clicked");
                 }}
+                disabled={isLoading}
               />
 
               <div className="mt-4 flex justify-center gap-3 text-xs text-muted-foreground">
@@ -350,6 +351,7 @@ export default function Home() {
                   onAttachment={() => {
                     console.log("Attachment clicked");
                   }}
+                  disabled={isLoading}
                 />
 
                 <p className="mt-3 text-center text-[11px] text-muted-foreground">

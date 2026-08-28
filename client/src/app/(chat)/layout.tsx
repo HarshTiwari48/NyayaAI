@@ -1,8 +1,9 @@
 "use client";
 
-import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+
 import AppSidebar from "@/components/sidebar/app-sidebar";
-import {ChatProvider} from "@/components/providers/chat-provider";
+import { ChatProvider } from "@/components/providers/chat-provider";
 
 export default function ChatLayout({
   children,
@@ -13,7 +14,10 @@ export default function ChatLayout({
     <ChatProvider>
       <SidebarProvider defaultOpen={false}>
         <AppSidebar />
-        {children}
+
+        <SidebarInset className="h-svh min-w-0 overflow-hidden">
+          {children}
+        </SidebarInset>
       </SidebarProvider>
     </ChatProvider>
   );
