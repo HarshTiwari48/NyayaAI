@@ -17,6 +17,7 @@ import {
 import {
   getThreadMessages,
   sendMessage as sendChatMessage,
+  sendMessageWithDocument,
 } from "@/services/chat.service";
 
 import { useAuthStore } from "@/stores/auth.store";
@@ -38,7 +39,11 @@ type ChatContextType = {
   status: string;
   hasMessages: boolean;
 
-  sendMessage: (message: string) => Promise<void>;
+  sendMessage: (
+    message: string,
+    file?: File
+  ) => Promise<void>;
+
   newChat: () => void;
   selectThread: (threadId: string) => Promise<void>;
   refreshThreads: () => Promise<void>;
@@ -54,11 +59,13 @@ export function ChatProvider({
   children: ReactNode;
 }) {
   const user = useAuthStore((state) => state.user);
+
   const isAuthLoading = useAuthStore(
     (state) => state.isLoading
   );
 
   const [messages, setMessages] = useState<Message[]>([]);
+
   const [threadId, setThreadId] = useState<string | null>(
     null
   );
@@ -66,8 +73,10 @@ export function ChatProvider({
   const [threads, setThreads] = useState<ChatThread[]>([]);
 
   const [isLoading, setIsLoading] = useState(false);
+
   const [isLoadingThreads, setIsLoadingThreads] =
     useState(false);
+
   const [isLoadingMessages, setIsLoadingMessages] =
     useState(false);
 
@@ -176,7 +185,10 @@ export function ChatProvider({
    * ============================================================
    */
 
-  const sendMessage = async (message: string) => {
+  const sendMessage = async (
+    message: string,
+    file?: File
+  ) => {
     const userMessage = message.trim();
 
     if (!userMessage || isLoading) {
@@ -196,7 +208,12 @@ export function ChatProvider({
     ]);
 
     setIsLoading(true);
-    setStatus("Understanding your question...");
+
+    setStatus(
+      file
+        ? "Reading your document..."
+        : "Understanding your question..."
+    );
 
     let currentThreadId = threadId;
 
@@ -205,8 +222,6 @@ export function ChatProvider({
        * ========================================================
        * FIRST MESSAGE
        * ========================================================
-       *
-       * Create the thread lazily.
        */
 
       if (!currentThreadId) {
@@ -215,14 +230,6 @@ export function ChatProvider({
         currentThreadId = thread.threadId;
 
         setThreadId(currentThreadId);
-
-        /*
-         * If the user is logged in, the backend actually
-         * created a persistent thread.
-         *
-         * Add it immediately to Recent instead of making
-         * the user wait for another request.
-         */
 
         if (user && !thread.isGuest) {
           const newThread: ChatThread = {
@@ -250,11 +257,18 @@ export function ChatProvider({
 
       let statusStep = 0;
 
-      const statuses = [
-        "Understanding your question...",
-        "Looking through relevant legal provisions...",
-        "Preparing your answer...",
-      ];
+      const statuses = file
+        ? [
+            "Reading your document...",
+            "Analyzing the document...",
+            "Looking through relevant legal provisions...",
+            "Preparing your answer...",
+          ]
+        : [
+            "Understanding your question...",
+            "Looking through relevant legal provisions...",
+            "Preparing your answer...",
+          ];
 
       const statusTimer = window.setInterval(() => {
         statusStep =
@@ -270,10 +284,16 @@ export function ChatProvider({
          * ======================================================
          */
 
-        const response = await sendChatMessage({
-          threadId: currentThreadId,
-          query: userMessage,
-        });
+        const response = file
+          ? await sendMessageWithDocument(
+              currentThreadId,
+              userMessage,
+              file
+            )
+          : await sendChatMessage({
+              threadId: currentThreadId,
+              query: userMessage,
+            });
 
         /*
          * ======================================================

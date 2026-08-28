@@ -236,9 +236,6 @@ export default function Home() {
 
               <ChatInput
                 onSend={sendMessage}
-                onAttachment={() => {
-                  console.log("Attachment clicked");
-                }}
                 disabled={isLoading}
               />
 
@@ -348,9 +345,6 @@ export default function Home() {
 
                 <ChatInput
                   onSend={sendMessage}
-                  onAttachment={() => {
-                    console.log("Attachment clicked");
-                  }}
                   disabled={isLoading}
                 />
 

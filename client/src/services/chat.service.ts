@@ -58,3 +58,22 @@ export const getThreadMessages = async (
 
   return response.data.data;
 };
+
+export const sendMessageWithDocument = async (
+  threadId: string,
+  query: string,
+  file: File
+): Promise<AIResponse> => {
+  const formData = new FormData();
+
+  formData.append("threadId", threadId);
+  formData.append("query", query);
+  formData.append("file", file);
+
+  const response = await api.post(
+    "/api/documents/analyze",
+    formData
+  );
+
+  return response.data.data;
+};
