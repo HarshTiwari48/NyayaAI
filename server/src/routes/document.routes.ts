@@ -17,8 +17,8 @@ router.post(
   "/analyze",
   aiRateLimiter,
   optionalAuth,
-  validate(documentQuerySchema),
   upload.single("file"),
+  validate(documentQuerySchema),
   analyzeDocumentController
 );
 
