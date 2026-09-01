@@ -1,5 +1,6 @@
 from langchain_core.language_models.chat_models import BaseChatModel
 from langgraph.graph import END, START, StateGraph
+from langgraph.checkpoint.base import BaseCheckpointSaver
 
 from app.graph.application_state import ApplicationState
 from app.graph.application_router import route_after_collection
@@ -17,6 +18,7 @@ from app.graph.nodes.application_generator import (
 
 def build_application_graph(
     llm: BaseChatModel,
+    checkpointer: BaseCheckpointSaver | None = None,
 ):
     builder = StateGraph(ApplicationState)
 
@@ -79,4 +81,6 @@ def build_application_graph(
         END,
     )
 
-    return builder.compile()
+    return builder.compile(
+        checkpointer=checkpointer,
+    )

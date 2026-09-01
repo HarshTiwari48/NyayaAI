@@ -69,7 +69,7 @@ def create_application_generator_node(
 
     def application_generator_node(
         state: ApplicationState,
-    ) -> dict:
+    ) -> dict: 
         info = state["application_info"]
 
         draft = chain.invoke(

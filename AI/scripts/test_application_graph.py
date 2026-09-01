@@ -5,13 +5,14 @@ sys.path.append(
     str(Path(__file__).resolve().parent.parent)
 )
 
-
 from langchain_core.messages import HumanMessage
 
-from app.rag.groq import get_groq_model
-from app.graph.application_graph import (
-    build_application_graph,
+from app.core.application_graph_service import (
+    application_graph,
 )
+
+
+THREAD_ID = "application-test-001"
 
 
 def print_result(result: dict):
@@ -30,8 +31,7 @@ def print_result(result: dict):
         print(result["follow_up_question"])
 
     if result.get("application_draft"):
-        print("\nAPPLICATION DRAFT:")
-        print()
+        print("\nAPPLICATION DRAFT:\n")
 
         draft = result["application_draft"]
 
@@ -62,18 +62,28 @@ def print_result(result: dict):
         print(draft.get("sender_details"))
 
 
-def main():
-    llm = get_groq_model()
+def run_turn(user_input: str):
+    config = {
+        "configurable": {
+            "thread_id": THREAD_ID,
+        }
+    }
 
-    graph = build_application_graph(llm)
+    snapshot = application_graph.get_state(config)
 
-    user_input = (
-        "I need to write an application to my college "
-        "asking for three days leave because I am sick."
-    )
+    if snapshot.values:
+        messages = (
+            snapshot.values["messages"]
+            + [HumanMessage(content=user_input)]
+        )
 
-    result = graph.invoke(
-        {
+        state = {
+            **snapshot.values,
+            "messages": messages,
+            "user_input": user_input,
+        }
+    else:
+        state = {
             "messages": [
                 HumanMessage(content=user_input)
             ],
@@ -84,7 +94,35 @@ def main():
             "follow_up_question": None,
             "application_draft": None,
         }
+
+    return application_graph.invoke(
+        state,
+        config=config,
     )
+
+
+def main():
+    print("\nTURN 1")
+    print("=" * 60)
+
+    turn_1 = (
+        "I need to write an application to my college "
+        "asking for three days leave because I am sick."
+    )
+
+    result = run_turn(turn_1)
+
+    print_result(result)
+
+    print("\n\nTURN 2")
+    print("=" * 60)
+
+    turn_2 = (
+        "My name is Harsh Tiwari. "
+        "I need leave from 10 September to 12 September."
+    )
+
+    result = run_turn(turn_2)
 
     print_result(result)
 
