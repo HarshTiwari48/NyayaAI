@@ -1,12 +1,15 @@
 from pathlib import Path
 from uuid import uuid4
+from xml.sax.saxutils import escape
 
+from reportlab.lib import colors
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib.enums import TA_LEFT
+from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
+from reportlab.lib.units import inch
 from reportlab.platypus import (
-    SimpleDocTemplate,
     Paragraph,
+    SimpleDocTemplate,
     Spacer,
 )
 
@@ -24,11 +27,16 @@ def generate_application_pdf(
     draft: ApplicationDraft | dict,
 ) -> Path:
     """
-    Generate a PDF file from an application draft.
+    Generate a professionally formatted PDF
+    from an application draft.
 
     Returns:
         Path to the generated PDF.
     """
+
+    # --------------------------------------------------
+    # NORMALIZE INPUT
+    # --------------------------------------------------
 
     if isinstance(draft, dict):
         draft = ApplicationDraft(**draft)
@@ -45,44 +53,119 @@ def generate_application_pdf(
         GENERATED_DOCUMENTS_DIR / file_name
     )
 
+    # --------------------------------------------------
+    # PDF DOCUMENT
+    # --------------------------------------------------
+
     document = SimpleDocTemplate(
         str(file_path),
         pagesize=A4,
-        rightMargin=72,
-        leftMargin=72,
-        topMargin=72,
-        bottomMargin=72,
+        leftMargin=0.85 * inch,
+        rightMargin=0.85 * inch,
+        topMargin=0.8 * inch,
+        bottomMargin=0.8 * inch,
+        title="Application",
+        author="NyayaAI",
     )
 
     styles = getSampleStyleSheet()
 
-    normal_style = styles["Normal"]
-    normal_style.alignment = TA_LEFT
-    normal_style.spaceAfter = 12
+    # --------------------------------------------------
+    # CUSTOM STYLES
+    # --------------------------------------------------
 
-    subject_style = styles["Heading2"]
-    subject_style.alignment = TA_LEFT
-    subject_style.spaceAfter = 18
+    recipient_style = ParagraphStyle(
+        name="Recipient",
+        parent=styles["Normal"],
+        fontName="Times-Roman",
+        fontSize=11,
+        leading=16,
+        alignment=TA_LEFT,
+        spaceAfter=2,
+    )
+
+    subject_style = ParagraphStyle(
+        name="Subject",
+        parent=styles["Normal"],
+        fontName="Times-Bold",
+        fontSize=11,
+        leading=16,
+        alignment=TA_CENTER,
+        spaceBefore=8,
+        spaceAfter=20,
+    )
+
+    salutation_style = ParagraphStyle(
+        name="Salutation",
+        parent=styles["Normal"],
+        fontName="Times-Roman",
+        fontSize=11,
+        leading=16,
+        alignment=TA_LEFT,
+        spaceAfter=16,
+    )
+
+    body_style = ParagraphStyle(
+        name="Body",
+        parent=styles["Normal"],
+        fontName="Times-Roman",
+        fontSize=11,
+        leading=17,
+        alignment=TA_LEFT,
+        spaceAfter=14,
+        firstLineIndent=0,
+    )
+
+    closing_style = ParagraphStyle(
+        name="Closing",
+        parent=styles["Normal"],
+        fontName="Times-Roman",
+        fontSize=11,
+        leading=16,
+        alignment=TA_LEFT,
+        spaceBefore=8,
+        spaceAfter=4,
+    )
+
+    sender_style = ParagraphStyle(
+        name="Sender",
+        parent=styles["Normal"],
+        fontName="Times-Bold",
+        fontSize=11,
+        leading=16,
+        alignment=TA_LEFT,
+        spaceAfter=2,
+    )
+
+    sender_details_style = ParagraphStyle(
+        name="SenderDetails",
+        parent=styles["Normal"],
+        fontName="Times-Roman",
+        fontSize=10.5,
+        leading=15,
+        alignment=TA_LEFT,
+        textColor=colors.HexColor("#333333"),
+    )
 
     story = []
 
-    # ---------------------------------------------
-    # RECIPIENT
-    # ---------------------------------------------
+    # --------------------------------------------------
+    # RECIPIENT BLOCK
+    # --------------------------------------------------
 
     if draft.recipient:
         story.append(
             Paragraph(
-                draft.recipient,
-                normal_style,
+                f"<b>To,</b><br/>{escape(draft.recipient)}",
+                recipient_style,
             )
         )
 
     if draft.organization:
         story.append(
             Paragraph(
-                draft.organization,
-                normal_style,
+                escape(draft.organization),
+                recipient_style,
             )
         )
 
@@ -90,66 +173,59 @@ def generate_application_pdf(
         Spacer(1, 18)
     )
 
-    # ---------------------------------------------
+    # --------------------------------------------------
     # SUBJECT
-    # ---------------------------------------------
+    # --------------------------------------------------
 
     story.append(
         Paragraph(
-            f"<b>Subject: {draft.subject}</b>",
+            f"Subject: {escape(draft.subject)}",
             subject_style,
         )
     )
 
-    # ---------------------------------------------
+    # --------------------------------------------------
     # SALUTATION
-    # ---------------------------------------------
+    # --------------------------------------------------
 
     story.append(
         Paragraph(
-            draft.salutation,
-            normal_style,
+            escape(draft.salutation),
+            salutation_style,
         )
     )
 
-    story.append(
-        Spacer(1, 12)
-    )
-
-    # ---------------------------------------------
+    # --------------------------------------------------
     # BODY
-    # ---------------------------------------------
+    # --------------------------------------------------
 
     for paragraph in draft.body:
-        story.append(
-            Paragraph(
-                paragraph,
-                normal_style,
+        if paragraph.strip():
+            story.append(
+                Paragraph(
+                    escape(paragraph),
+                    body_style,
+                )
             )
-        )
 
-        story.append(
-            Spacer(1, 12)
-        )
-
-    # ---------------------------------------------
+    # --------------------------------------------------
     # CLOSING
-    # ---------------------------------------------
+    # --------------------------------------------------
 
     story.append(
-        Spacer(1, 12)
+        Spacer(1, 10)
     )
 
     story.append(
         Paragraph(
-            draft.closing,
-            normal_style,
+            escape(draft.closing),
+            closing_style,
         )
     )
 
-    # ---------------------------------------------
-    # SENDER
-    # ---------------------------------------------
+    # --------------------------------------------------
+    # SIGNATURE / SENDER
+    # --------------------------------------------------
 
     if draft.sender_name:
         story.append(
@@ -158,22 +234,22 @@ def generate_application_pdf(
 
         story.append(
             Paragraph(
-                draft.sender_name,
-                normal_style,
+                escape(draft.sender_name),
+                sender_style,
             )
         )
 
     if draft.sender_details:
         story.append(
             Paragraph(
-                draft.sender_details,
-                normal_style,
+                escape(draft.sender_details),
+                sender_details_style,
             )
         )
 
-    # ---------------------------------------------
+    # --------------------------------------------------
     # BUILD PDF
-    # ---------------------------------------------
+    # --------------------------------------------------
 
     document.build(story)
 

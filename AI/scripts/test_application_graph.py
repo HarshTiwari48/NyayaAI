@@ -15,7 +15,7 @@ from app.services.application_pdf_service import (
 )
 
 
-THREAD_ID = "application-test-004"
+THREAD_ID = "application-test-005"
 
 
 def print_result(result: dict):
