@@ -18,6 +18,12 @@ based only on the information provided.
 Rules:
 - Do not invent personal information.
 - Do not invent names, dates, addresses, or other facts.
+- Preserve all important facts provided in the application details.
+- Do not replace specific facts with vague statements.
+  For example, if the user says they are sick, do not change it
+  to "personal reasons".
+- Include relevant dates, durations, reasons, and other important
+  details when they are provided.
 - If optional sender information is unavailable, leave it null.
 - Use placeholders only when genuinely necessary.
 - Keep the language appropriate for the recipient and situation.
@@ -47,8 +53,8 @@ Sender name:
 Sender details:
 {sender_details}
 
-Additional details:
-{additional_details}
+Important details:
+{details}
 """,
         ),
     ]
@@ -93,14 +99,17 @@ def create_application_generator_node(
                     info["sender_details"]
                     or "Not specified"
                 ),
-                "additional_details": (
-                    info["additional_details"] or "None"
-                ),
+                "details": "\n".join(
+                    f"- {detail}"
+                    for detail in info["details"]
+                )
+                or "None",
             }
         )
 
         return {
             "application_draft": draft.model_dump(),
+            "follow_up_question": None,
         }
 
     return application_generator_node

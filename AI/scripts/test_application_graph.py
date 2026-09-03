@@ -10,9 +10,12 @@ from langchain_core.messages import HumanMessage
 from app.core.application_graph_service import (
     application_graph,
 )
+from app.services.application_pdf_service import (
+    generate_application_pdf,
+)
 
 
-THREAD_ID = "application-test-002"
+THREAD_ID = "application-test-004"
 
 
 def print_result(result: dict):
@@ -60,6 +63,13 @@ def print_result(result: dict):
 
         print("\nSender details:")
         print(draft.get("sender_details"))
+
+        pdf_path = generate_application_pdf(
+            draft
+        )
+
+        print("\nPDF GENERATED:")
+        print(pdf_path.resolve())
 
 
 def run_turn(user_input: str):

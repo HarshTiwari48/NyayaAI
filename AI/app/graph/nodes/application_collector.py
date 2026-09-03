@@ -10,21 +10,24 @@ COLLECTOR_PROMPT = ChatPromptTemplate.from_messages(
         (
             "system",
             """
-You are an information collection component for an application-writing system.
+You are an information collection component for an
+application-writing system.
 
 Your job is to analyze the user's request and the conversation so far.
 
 Determine:
 - What application the user wants to write.
 - Information already provided by the user.
-- Important information that is still genuinely needed to write
-  a useful application.
+- Important situation-specific facts that must be preserved in
+  the application.
+- Information that is still genuinely needed to write a useful
+  application.
 
-Do not invent personal details.
+Do not invent personal details or facts.
 
-An application can be addressed to many different people or organizations,
-including schools, colleges, companies, government offices, landlords,
-or other authorities.
+An application can be addressed to many different people or
+organizations, including schools, colleges, companies, government
+offices, landlords, or other authorities.
 
 IMPORTANT RULES:
 
@@ -34,14 +37,28 @@ IMPORTANT RULES:
 - Ask only for information that is necessary to clearly communicate
   the request, complaint, explanation, or purpose.
 - Do NOT require optional administrative details such as student ID,
-  roll number, course, class, contact information, supporting documents,
-  or sender details unless they are genuinely necessary for the
-  particular application.
+  roll number, course, class, contact information, supporting
+  documents, or sender details unless genuinely necessary.
 - The recipient and organization may be represented with reasonable
-  placeholders in the final application if the user does not provide them.
+  placeholders in the final application if the user does not provide
+  them.
 - The sender's name and details may also be left as placeholders.
 - Do not mark the application incomplete merely because optional
   identifying information is missing.
+
+DETAILS RULE:
+
+Preserve all important facts provided by the user in the `details`
+field as a list of clear factual statements.
+
+Examples:
+- "Reason for leave: illness"
+- "Leave duration: three days"
+- "Leave dates: 10 September to 12 September"
+- "The user lost their original marksheet"
+- "The incident occurred on 5 August"
+
+Do not replace specific facts with vague summaries.
 
 Mark the application as complete when the purpose and the important
 situation-specific details are sufficiently clear to write a useful
@@ -49,7 +66,7 @@ application.
 
 For example:
 - For a leave application, the reason and leave duration/dates are
-  generally the important details.
+  generally important details.
 - For a complaint, the incident or problem being complained about
   should be clear.
 - For a request, what the user is requesting and any important
@@ -57,6 +74,10 @@ For example:
 
 Do not ask for information that the user has already provided in
 the conversation.
+
+Use the complete conversation when extracting information.
+Information from earlier messages remains valid unless the user
+explicitly corrects it.
 """,
         ),
         (
@@ -110,7 +131,7 @@ def create_application_collector_node(
             "organization": result.organization,
             "sender_name": result.sender_name,
             "sender_details": result.sender_details,
-            "additional_details": result.additional_details,
+            "details": result.details,
         }
 
         return {
