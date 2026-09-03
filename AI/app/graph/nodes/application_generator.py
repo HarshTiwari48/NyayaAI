@@ -69,24 +69,32 @@ def create_application_generator_node(
 
     def application_generator_node(
         state: ApplicationState,
-    ) -> dict: 
+    ) -> dict:
         info = state["application_info"]
+
+        if not info:
+            raise ValueError(
+                "Application information is missing."
+            )
 
         draft = chain.invoke(
             {
-                "purpose": info.purpose,
-                "recipient": info.recipient or "Not specified",
+                "purpose": info["purpose"],
+                "recipient": (
+                    info["recipient"] or "Not specified"
+                ),
                 "organization": (
-                    info.organization or "Not specified"
+                    info["organization"] or "Not specified"
                 ),
                 "sender_name": (
-                    info.sender_name or "Not specified"
+                    info["sender_name"] or "Not specified"
                 ),
                 "sender_details": (
-                    info.sender_details or "Not specified"
+                    info["sender_details"]
+                    or "Not specified"
                 ),
                 "additional_details": (
-                    info.additional_details or "None"
+                    info["additional_details"] or "None"
                 ),
             }
         )

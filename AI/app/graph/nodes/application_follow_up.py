@@ -52,7 +52,7 @@ def create_application_follow_up_node(
 
         response = chain.invoke(
             {
-                "purpose": application_info.purpose,
+                "purpose": application_info["purpose"],
                 "missing_fields": ", ".join(
                     state["missing_fields"]
                 ),

@@ -79,14 +79,14 @@ def create_application_collector_node(
             }
         )
 
-        application_info = ApplicationInformation(
-            purpose=result.purpose,
-            recipient=result.recipient,
-            organization=result.organization,
-            sender_name=result.sender_name,
-            sender_details=result.sender_details,
-            additional_details=result.additional_details,
-        )
+        application_info = {
+            "purpose": result.purpose,
+            "recipient": result.recipient,
+            "organization": result.organization,
+            "sender_name": result.sender_name,
+            "sender_details": result.sender_details,
+            "additional_details": result.additional_details,
+        }
 
         return {
             "application_info": application_info,

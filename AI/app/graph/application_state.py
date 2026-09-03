@@ -1,10 +1,7 @@
-from typing import TypedDict
+from typing import Any, Annotated, TypedDict
 
 from langchain_core.messages import BaseMessage
 from langgraph.graph.message import add_messages
-from typing import Annotated
-
-from app.schemas.application import ApplicationInformation
 
 
 class ApplicationState(TypedDict):
@@ -13,7 +10,7 @@ class ApplicationState(TypedDict):
     user_input: str
 
     # Collected information
-    application_info: ApplicationInformation | None
+    application_info: dict[str, Any] | None
 
     # Information collection
     missing_fields: list[str]
