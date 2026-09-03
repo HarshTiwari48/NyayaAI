@@ -17,7 +17,8 @@ Your job is to analyze the user's request and the conversation so far.
 Determine:
 - What application the user wants to write.
 - Information already provided by the user.
-- Important information that is still missing.
+- Important information that is still genuinely needed to write
+  a useful application.
 
 Do not invent personal details.
 
@@ -25,13 +26,37 @@ An application can be addressed to many different people or organizations,
 including schools, colleges, companies, government offices, landlords,
 or other authorities.
 
-Only require information that is genuinely necessary to create a useful
+IMPORTANT RULES:
+
+- Do NOT require a fixed set of fields for every application.
+- Determine required information based on the specific purpose
+  of the application.
+- Ask only for information that is necessary to clearly communicate
+  the request, complaint, explanation, or purpose.
+- Do NOT require optional administrative details such as student ID,
+  roll number, course, class, contact information, supporting documents,
+  or sender details unless they are genuinely necessary for the
+  particular application.
+- The recipient and organization may be represented with reasonable
+  placeholders in the final application if the user does not provide them.
+- The sender's name and details may also be left as placeholders.
+- Do not mark the application incomplete merely because optional
+  identifying information is missing.
+
+Mark the application as complete when the purpose and the important
+situation-specific details are sufficiently clear to write a useful
 application.
 
-Do not require unnecessary details.
+For example:
+- For a leave application, the reason and leave duration/dates are
+  generally the important details.
+- For a complaint, the incident or problem being complained about
+  should be clear.
+- For a request, what the user is requesting and any important
+  circumstances should be clear.
 
-The user's name and sender details are optional because they can be
-left as placeholders in the final application if necessary.
+Do not ask for information that the user has already provided in
+the conversation.
 """,
         ),
         (

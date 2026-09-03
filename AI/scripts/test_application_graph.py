@@ -12,7 +12,7 @@ from app.core.application_graph_service import (
 )
 
 
-THREAD_ID = "application-test-001"
+THREAD_ID = "application-test-002"
 
 
 def print_result(result: dict):
@@ -120,6 +120,7 @@ def main():
     turn_2 = (
         "My name is Harsh Tiwari. "
         "I need leave from 10 September to 12 September."
+        "Address it to the Principal of my college."
     )
 
     result = run_turn(turn_2)
